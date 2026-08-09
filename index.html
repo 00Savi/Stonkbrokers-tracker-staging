@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StonkBrokers ROI Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
+                    colors: { dark: '#0f172a', card: '#1e293b', primary: '#3b82f6', success: '#10b981', warning: '#f59e0b', danger: '#ef4444' }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            background-image: radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.08), transparent 25%), radial-gradient(circle at 85% 30%, rgba(16, 185, 129, 0.08), transparent 25%);
+            background-attachment: fixed;
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .tab-btn.active {
+            background-color: #3b82f6;
+            color: #ffffff;
+            border-color: #3b82f6;
+        }
+        .pixel-art {
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+    <div class="max-w-6xl mx-auto space-y-6">
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row justify-between items-center pb-6 border-b border-gray-800">
+            <div class="flex items-center space-x-3 mb-4 md:mb-0">
+                <img src="logo.png" alt="StonkBrokers Tracker Avatar" class="w-11 h-11 rounded-lg object-cover border border-gray-700 shadow-md pixel-art">
+                <div>
+                    <div class="flex items-center">
+                        <h1 class="text-2xl font-bold tracking-tight">StonkBrokers Tracker</h1>
+                        <span class="ml-3 px-2 py-0.5 rounded text-[10px] font-bold tracking-wider bg-warning/10 text-warning border border-warning/20">BETA</span>
+                    </div>
+                    <p class="text-gray-400 text-sm mt-1">Community Fan Project • Not affiliated with $STONKBROKER or Clutch Markets</p>
+                </div>
+            </div>
+            <div class="flex space-x-6 text-sm">
+                <div class="flex flex-col"><span class="text-gray-400">ETH Price</span><span class="font-mono font-semibold" id="global-eth">Loading...</span></div>
+                <div class="flex flex-col"><span class="text-gray-400">$STONK Price</span><span class="font-mono font-semibold" id="global-token">Loading...</span></div>
+                <div class="flex flex-col"><span class="text-gray-400">NFT Floor (Base + 10%)</span><span class="font-mono font-semibold" id="global-floor">Loading...</span></div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <div class="flex space-x-4 border-b border-gray-800 pb-4">
+            <button onclick="switchTab('roi')" id="btn-roi" class="tab-btn active px-5 py-2.5 rounded-xl font-semibold text-sm transition-all border border-gray-700 bg-gray-800/50 text-gray-300">
+                <i class="fa-solid fa-calculator mr-2"></i> Tier ROI Benchmarks
+            </button>
+            <button onclick="switchTab('activation')" id="btn-activation" class="tab-btn px-5 py-2.5 rounded-xl font-semibold text-sm transition-all border border-gray-700 bg-gray-800/50 text-gray-300">
+                <i class="fa-solid fa-chart-pie mr-2"></i> Ecosystem Activation
+            </button>
+        </div>
+
+        <!-- TAB 1: ROI BENCHMARKS -->
+        <div id="tab-roi" class="space-y-6">
+            <section class="glass-card rounded-2xl p-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 gap-4">
+                    <div>
+                        <h3 class="text-lg font-semibold flex items-center">
+                            <i class="fa-solid fa-layer-group text-primary mr-2"></i> Global Yield ROI Benchmarks
+                        </h3>
+                        <p class="text-sm text-gray-400 mt-1" id="last-updated">Estimated returns based on global network distributions vs. live floor entry costs.</p>
+                    </div>
+                    <div class="text-xs text-gray-500 bg-gray-800/50 px-3 py-1.5 rounded-lg border border-gray-700">
+                        Floor Entry Cost: <span class="font-mono text-gray-300" id="base-entry-cost">Loading...</span>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse min-w-[700px]">
+                        <thead>
+                            <tr class="text-xs uppercase text-gray-500 border-b border-gray-800">
+                                <th class="pb-3 font-semibold pl-2">Tier</th>
+                                <th class="pb-3 font-semibold">Activation Req.</th>
+                                <th class="pb-3 font-semibold">Current Total Cost</th>
+                                <th class="pb-3 font-semibold">Expected Yield (Annualized)</th>
+                                <th class="pb-3 font-semibold text-right pr-2">Est. ROI (CoC)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tier-table-body" class="text-sm divide-y divide-gray-800/50">
+                            <tr><td colspan="5" class="py-4 text-center text-gray-500 italic">Fetching on-chain data payload...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Methodology & Disclaimers Box -->
+            <div class="glass-card rounded-2xl p-6 border border-gray-800 text-gray-400 text-xs space-y-3">
+                <h4 class="text-gray-200 font-semibold text-sm flex items-center"><i class="fa-solid fa-circle-info text-primary mr-2"></i> Methodology & Disclaimer</h4>
+                <p><strong>Methodology:</strong> Cash-on-Cash (CoC) return metrics are calculated by taking a 7-day trailing sample of realized global protocol distributions, dynamically dividing by the live active network weight, annualizing the receipts, and evaluating them against current AMM floor purchase costs plus tier activation requirements.</p>
+                <p><strong>Disclaimer:</strong> This dashboard is a work-in-progress community fan project and is <strong>not affiliated with, associated with, or endorsed by $STONKBROKER or Clutch Markets.</strong> It provides automated on-chain analytics for informational use only. <strong>This is not financial advice.</strong> Cryptocurrency and NFT tokenomics carry inherent volatility and smart contract risks. Past yields do not guarantee future performance. Always perform your own research before deploying capital.</p>
+            </div>
+        </div>
+
+        <!-- TAB 2: ACTIVATION STATS -->
+        <div id="tab-activation" class="space-y-6 hidden">
+            <!-- Top Stats Row -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="glass-card rounded-2xl p-8 text-center flex flex-col justify-center">
+                    <h3 class="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2">Currently Active</h3>
+                    <div class="text-5xl font-bold text-primary mb-2" id="stat-active">--</div>
+                    <div class="text-sm text-gray-500">out of <span id="stat-total">4444</span> total supply</div>
+                </div>
+                <div class="glass-card rounded-2xl p-8 text-center flex flex-col justify-center">
+                    <h3 class="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2">Activation Rate</h3>
+                    <div class="text-5xl font-bold text-success mb-2" id="stat-percent">--%</div>
+                    <div class="text-sm text-gray-500">Circulating active ratio</div>
+                </div>
+            </div>
+
+            <!-- Middle Row: Pie Chart & Ecosystem Explainer -->
+            <div class="flex flex-col lg:flex-row gap-6">
+                <div class="glass-card rounded-2xl p-6 w-full lg:w-1/3 flex flex-col">
+                    <h3 class="text-sm font-semibold text-gray-300 mb-4 flex items-center">
+                        <i class="fa-solid fa-chart-pie text-success mr-2"></i> Current Tier Distribution
+                    </h3>
+                    <div class="relative flex-grow w-full min-h-[240px] flex justify-center items-center">
+                        <canvas id="tierPieChart"></canvas>
+                    </div>
+                </div>
+                <div class="glass-card rounded-2xl p-8 w-full lg:w-2/3 flex flex-col justify-center text-gray-400 text-sm">
+                    <h3 class="text-gray-200 font-semibold mb-4 flex items-center text-base"><i class="fa-solid fa-server text-primary mr-2"></i> Network Analytics</h3>
+                    <p class="mb-4 leading-relaxed">This dashboard maintains an active ledger of the ecosystem by directly indexing and replaying all historical logs from the StonkBrokers Activation Manager smart contract.</p>
+                    <p class="leading-relaxed">When a broker activates, they lock tokens from the circulating supply to secure their weighted multiplier. Upon the execution of a true ownership transfer (NFT sale or wallet move), the smart contract automatically triggers an <code class="text-danger bg-gray-800 px-1.5 py-0.5 rounded">ActivationCleared</code> event. This strips the tier, resets the multiplier back to base weight, and mathematically increases the yield share for all remaining active holders.</p>
+                </div>
+            </div>
+
+            <!-- Bottom Row: Massive All-Time Lifecycle Line Chart -->
+            <div class="glass-card rounded-2xl p-6 w-full">
+                <h3 class="text-sm font-semibold text-gray-300 mb-4 flex items-center">
+                    <i class="fa-solid fa-chart-line text-primary mr-2"></i> Project Lifetime Activations (All-Time Cumulative)
+                </h3>
+                <div class="relative w-full h-96">
+                    <canvas id="activationLineChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const formatUSD = (num) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num || 0);
+        const formatNum = (num) => new Intl.NumberFormat('en-US').format(num || 0);
+
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.font.family = "'Inter', sans-serif";
+
+        let lineChartInstance = null;
+        let pieChartInstance = null;
+
+        function switchTab(tab) {
+            document.getElementById('tab-roi').classList.toggle('hidden', tab !== 'roi');
+            document.getElementById('tab-activation').classList.toggle('hidden', tab !== 'activation');
+            document.getElementById('btn-roi').classList.toggle('active', tab === 'roi');
+            document.getElementById('btn-activation').classList.toggle('active', tab === 'activation');
+
+            if (tab === 'activation') {
+                setTimeout(() => {
+                    if (lineChartInstance) lineChartInstance.resize();
+                    if (pieChartInstance) pieChartInstance.resize();
+                }, 50);
+            }
+        }
+
+        async function initializeDashboard() {
+            try {
+                const res = await fetch(`data.json?t=${Date.now()}`);
+                const data = await res.json();
+
+                document.getElementById('global-eth').innerText = formatUSD(data.market.ethPriceUsd);
+                document.getElementById('global-token').innerText = data.market.tokenPriceUsd < 0.01 ? `$${data.market.tokenPriceUsd.toFixed(5)}` : `$${data.market.tokenPriceUsd.toFixed(4)}`;
+                document.getElementById('global-floor').innerText = `${data.market.nftFloorEth} ETH`;
+                
+                const baseNftCostUsd = data.market.tokenPriceUsd * 666666 * 1.10;
+                document.getElementById('base-entry-cost').innerText = formatUSD(baseNftCostUsd);
+                
+                const updateDate = new Date(data.lastUpdated);
+                document.getElementById('last-updated').innerText = `Last automated sync: ${updateDate.toLocaleString()}`;
+
+                if (data.activation) {
+                    document.getElementById('stat-active').innerText = formatNum(data.activation.activeCount);
+                    document.getElementById('stat-total').innerText = formatNum(data.activation.totalSupply);
+                    document.getElementById('stat-percent').innerText = `${data.activation.percentActivated}%`;
+
+                    if (data.activation.history && data.activation.history.labels) {
+                        if (lineChartInstance) lineChartInstance.destroy();
+                        lineChartInstance = new Chart(document.getElementById('activationLineChart'), {
+                            type: 'line',
+                            data: {
+                                labels: data.activation.history.labels,
+                                datasets: [{
+                                    label: 'Active Brokers',
+                                    data: data.activation.history.cumulative,
+                                    borderColor: '#3b82f6',
+                                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                    borderWidth: 2.5,
+                                    fill: true,
+                                    tension: 0.2,
+                                    pointRadius: 1,
+                                    pointBackgroundColor: '#3b82f6'
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+                                scales: {
+                                    x: { grid: { display: false }, ticks: { maxTicksLimit: 15 } },
+                                    y: { grid: { color: 'rgba(51, 65, 85, 0.4)' }, ticks: { precision: 0 } }
+                                }
+                            }
+                        });
+                    }
+
+                    if (data.activation.breakdown) {
+                        if (pieChartInstance) pieChartInstance.destroy();
+                        pieChartInstance = new Chart(document.getElementById('tierPieChart'), {
+                            type: 'doughnut',
+                            data: {
+                                labels: ['T0 (Floor)', 'T1 (Analyst)', 'T2 (Manager)', 'T3 (Director)', 'T4 (Partner)'],
+                                datasets: [{
+                                    data: [
+                                        data.activation.breakdown.T0 || 0,
+                                        data.activation.breakdown.T1 || 0,
+                                        data.activation.breakdown.T2 || 0,
+                                        data.activation.breakdown.T3 || 0,
+                                        data.activation.breakdown.T4 || 0
+                                    ],
+                                    backgroundColor: ['#64748b', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'],
+                                    borderWidth: 0
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                cutout: '65%',
+                                plugins: {
+                                    legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } }
+                                }
+                            }
+                        });
+                    }
+                }
+
+                const tbody = document.getElementById('tier-table-body');
+                tbody.innerHTML = '';
+
+                data.tiers.forEach(bm => {
+                    const activationCostUsd = bm.reqTokens * data.market.tokenPriceUsd;
+                    const currentTotalCostUsd = baseNftCostUsd + activationCostUsd;
+                    const estCashOnCash = (currentTotalCostUsd > 0 && bm.trackedAnnualYieldUsd > 0) ? (bm.trackedAnnualYieldUsd / currentTotalCostUsd) * 100 : 0;
+
+                    let yieldDisplay = bm.trackedAnnualYieldUsd === 0 ? 
+                        `<span class="text-xs text-gray-500 italic">No yield tracked</span>` : 
+                        `${formatUSD(bm.trackedAnnualYieldUsd)} <span class="text-xs text-gray-500">/yr</span>`;
+
+                    let roiBadge = `<span class="inline-block px-2.5 py-1 rounded bg-success/10 text-success font-bold text-sm border border-success/20">${estCashOnCash.toFixed(2)}%</span>`;
+
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-gray-800/30 transition-colors">
+                            <td class="py-4 pl-2">
+                                <div class="flex items-center">
+                                    <span class="w-8 h-8 rounded bg-gray-800 flex items-center justify-center font-bold text-xs mr-3 text-primary border border-gray-700">${bm.tier}</span>
+                                    <div>
+                                        <div class="font-semibold text-gray-200">${bm.name || ''}</div>
+                                        <div class="text-[10px] text-gray-500 font-mono">Weight: <span class="text-warning">${bm.weight}x</span></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-4"><span class="font-mono text-gray-300">${formatNum(bm.reqTokens)}</span><span class="text-xs text-gray-500 ml-1">STONK</span></td>
+                            <td class="py-4"><span class="font-mono font-semibold">${formatUSD(currentTotalCostUsd)}</span><div class="text-[10px] text-gray-500">Floor + ${formatUSD(activationCostUsd)} Act.</div></td>
+                            <td class="py-4 font-mono text-gray-300">${yieldDisplay}</td>
+                            <td class="py-4 text-right pr-2">${roiBadge}</td>
+                        </tr>`;
+                });
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('tier-table-body').innerHTML = `<tr><td colspan="5" class="py-4 text-center text-danger font-semibold">Data sync pending or unavailable. Check GitHub Actions logs.</td></tr>`;
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', initializeDashboard);
+    </script>
+</body>
+</html>
