@@ -3,18 +3,18 @@
     "ethPriceUsd": 1924.74,
     "tokenPriceUsd": 0.03,
     "nftFloorEth": 11.362,
-    "lastUpdated": "2026-08-09T16:49:48.776Z"
+    "lastUpdated": "2026-08-09T16:53:14.127Z"
   },
   "activation": {
-    "activeCount": 842,
-    "percentActivated": 38.5,
+    "activeCount": 800,
+    "percentActivated": 18.001800180018,
     "totalSupply": 4444,
     "breakdown": {
-      "T0": 320,
-      "T1": 210,
-      "T2": 160,
-      "T3": 95,
-      "T4": 57
+      "T0": 0,
+      "T1": 0,
+      "T2": 0,
+      "T3": 0,
+      "T4": 0
     },
     "history": {
       "labels": [
@@ -27,18 +27,18 @@
         "Today"
       ],
       "cumulative": [
-        420,
-        510,
-        600,
-        680,
-        740,
-        790,
-        842
+        400,
+        480,
+        560,
+        640,
+        710,
+        760,
+        800
       ]
     },
     "dualSinkBurn": {
-      "totalBurnTokens": "299160000.0",
-      "equivalentBrokersBurnt": "448.74"
+      "totalBurnTokens": "0.0",
+      "equivalentBrokersBurnt": "0.00"
     }
   },
   "tiers": [
@@ -78,5 +78,5 @@
       "trackedAnnualYieldUsd": 18138.84
     }
   ],
-  "lastUpdated": "2026-08-09T16:49:48.776Z"
+  "lastUpdated": "2026-08-09T16:53:14.127Z"
 }
