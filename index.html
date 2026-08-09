@@ -156,8 +156,8 @@
                     // Format Yield and ROI presentation based on tracked volume
                     if (yieldUsd > 0) {
                         const roi = (yieldUsd / totalCostUsd) * 100;
-                        yieldHtml = `<span class="text-white font-bold text-base">\${formatCurrency(yieldUsd)}</span> <span class="text-slate-500">/yr</span>`;
-                        roiHtml = `<span class="bg-emerald-900/20 text-emerald-400 border border-emerald-800/50 px-2.5 py-1 rounded text-sm font-bold shadow-sm">\${roi.toFixed(2)}%</span>`;
+                        yieldHtml = `<span class="text-white font-bold text-base">${formatCurrency(yieldUsd)}</span> <span class="text-slate-500">/yr</span>`;
+                        roiHtml = `<span class="bg-emerald-900/20 text-emerald-400 border border-emerald-800/50 px-2.5 py-1 rounded text-sm font-bold shadow-sm">${roi.toFixed(2)}%</span>`;
                     } else {
                         yieldHtml = `<span class="text-slate-500 italic">No yield tracked</span>`;
                         roiHtml = `<span class="bg-emerald-900/20 text-emerald-400 border border-emerald-800/50 px-2.5 py-1 rounded text-sm font-bold shadow-sm opacity-50">0.00%</span>`;
@@ -165,26 +165,26 @@
                     
                     const tr = document.createElement('tr');
                     tr.className = 'border-b border-[#334155]/50 hover:bg-[#334155]/20 transition-colors duration-150';
-                    tr.innerHTML = \`
+                    tr.innerHTML = `
                         <td class="py-5 pl-2">
                             <div class="flex items-center gap-3">
-                                <div class="bg-[#0f172a] border border-[#334155] text-blue-400 px-2.5 py-1 rounded text-xs font-bold shadow-inner">\${t.tier}</div>
+                                <div class="bg-[#0f172a] border border-[#334155] text-blue-400 px-2.5 py-1 rounded text-xs font-bold shadow-inner">${t.tier}</div>
                                 <div>
-                                    <div class="text-white font-bold">\${t.name}</div>
-                                    <div class="text-xs text-slate-500 mt-0.5">Weight: <span class="text-yellow-500 font-semibold">\${t.weight}x</span></div>
+                                    <div class="text-white font-bold">${t.name}</div>
+                                    <div class="text-xs text-slate-500 mt-0.5">Weight: <span class="text-yellow-500 font-semibold">${t.weight}x</span></div>
                                 </div>
                             </div>
                         </td>
                         <td class="py-5">
-                            <span class="text-white font-bold">\${formatNumber(t.reqTokens)}</span> <span class="text-slate-500 text-sm ml-1">STONK</span>
+                            <span class="text-white font-bold">${formatNumber(t.reqTokens)}</span> <span class="text-slate-500 text-sm ml-1">STONK</span>
                         </td>
                         <td class="py-5">
-                            <div class="text-white font-bold text-base">\${formatCurrency(totalCostUsd)}</div>
-                            <div class="text-xs text-slate-500 mt-0.5">Floor + \${formatCurrency(activationCostUsd)} Act.</div>
+                            <div class="text-white font-bold text-base">${formatCurrency(totalCostUsd)}</div>
+                            <div class="text-xs text-slate-500 mt-0.5">Floor + ${formatCurrency(activationCostUsd)} Act.</div>
                         </td>
-                        <td class="py-5">\${yieldHtml}</td>
-                        <td class="py-5 text-right pr-2">\${roiHtml}</td>
-                    \`;
+                        <td class="py-5">${yieldHtml}</td>
+                        <td class="py-5 text-right pr-2">${roiHtml}</td>
+                    `;
                     tbody.appendChild(tr);
                 });
                 
