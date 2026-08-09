@@ -7,10 +7,9 @@ const CHAIN_ID = 4663;
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
-// NOTE: If they drop a new token, add its contract address and ticker here!
 const TOKEN_TICKERS = {
-  "0x0bd7d308f8e1639fab988df18a8011f41eacad73": null, // WETH
-  "0xe934e36a439c94017b64a3fece66af12099abf50": null, // STONK
+  "0x0bd7d308f8e1639fab988df18a8011f41eacad73": null,     // WETH
+  "0xe934e36a439c94017b64a3fece66af12099abf50": "STONK", // STONKBROKER
   "0xaf3d76f1834a1d425780943c99ea8a608f8a93f9": "AAPL",
   "0x12f190a9f9d7d37a250758b26824b97ce941bf54": "AMZN",
   "0xd0601ce157db5bdc3162bbac2a2c8af5320d9eec": "NVDA",
@@ -23,14 +22,21 @@ const TOKEN_TICKERS = {
   "0x05b37fb53a299a1b874a619e1c4c404d52c36f4c": "RDDT",
   "0x1b0e319c6a659f002271b69db8a7df2f911c153e": "GME",
   "0xa30fa36db767ad9ed3f7a60fc79526fb4d56d344": "USO",
-  "0x5fc5360d0400a0fd4f2af552add042d716f1d168": null, // USDG
+  "0x5fc5360d0400a0fd4f2af552add042d716f1d168": null,     // USDG
   "0x1383b43aed527485f191b60060f5b5471f71b1ca": null
+};
+
+const FALLBACK_STOCK_PRICES = {
+  "AAPL": 220, "AMZN": 180, "NVDA": 120, "SLV": 27, "MSFT": 420,
+  "COST": 850, "USAR": 25, "SPCX": 30, "GOOGL": 165, "RDDT": 60,
+  "GME": 20, "USO": 75
 };
 
 const ACTIVATION_MANAGER = "0xacd5ae3c060c1137fe2ee86b0ab2ef697456f664".toLowerCase();
 const NFT_CONTRACT = "0x539cdd042c2f3d93ebc5be7dfff0c79f3b4fabf0".toLowerCase();
+
 const PROTOCOL_CONTRACTS = [
-  "0x1f12fe622c11947f93f53d63f68f7f46b6d081c9", // CLOCK IN V2
+  "0x1f12fe622c11947f93f53d63f68f7f46b6d081c9", // DIRECTED CLOCK IN BOOSTER / CLOCK IN V2
   "0x55642a3f10f1af5145d3d59021b1d6b03bb8692c"  // SAFETY DEPOSIT CLOCK IN (FEE ROUTER)
 ];
 
@@ -45,7 +51,7 @@ const ACTIVATION_ABI = [
 const iface = new ethers.Interface(ACTIVATION_ABI);
 
 let prices = {};
-let market = { ethPriceUsd: 1900, tokenPriceUsd: 0.03, nftFloorEth: 10 };
+let market = { ethPriceUsd: 1917, tokenPriceUsd: 0.0308, nftFloorEth: 11.77 };
 
 const tierStructure = [
   { id: "T0", name: "Floor Trader", reqTokens: 66666, weight: 100 },
@@ -58,7 +64,7 @@ const tierStructure = [
 async function secureFetch(url) {
   for (let i = 0; i < 4; i++) {
     try {
-      const res = await fetch(url, { headers: { "Accept": "application/json", "User-Agent": "StonkBrokersTracker/4.7" } });
+      const res = await fetch(url, { headers: { "Accept": "application/json", "User-Agent": "StonkBrokersTracker/4.8" } });
       if (res.status === 429) throw new Error("rate");
       return await res.json();
     } catch (e) {
@@ -72,9 +78,9 @@ async function loadPrices() {
   try {
     const r = await fetch("https://api.exchange.coinbase.com/products/ETH-USD/ticker");
     const j = await r.json();
-    market.ethPriceUsd = parseFloat(j.price);
-    prices["0x0bd7d308f8e1639fab988df18a8011f41eacad73"] = market.ethPriceUsd;
+    if (j?.price) market.ethPriceUsd = parseFloat(j.price);
   } catch {}
+  prices["0x0bd7d308f8e1639fab988df18a8011f41eacad73"] = market.ethPriceUsd;
 
   try {
     const r = await fetch("https://api.dexscreener.com/latest/dex/tokens/0xe934e36a439c94017b64a3fece66af12099abf50");
@@ -82,21 +88,32 @@ async function loadPrices() {
     if (j?.pairs?.length) {
       const best = j.pairs.sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0))[0];
       market.tokenPriceUsd = parseFloat(best.priceUsd);
-      prices["0xe934e36a439c94017b64a3fece66af12099abf50"] = market.tokenPriceUsd;
     }
   } catch {}
+  prices["0xe934e36a439c94017b64a3fece66af12099abf50"] = market.tokenPriceUsd;
 
   for (const [addr, ticker] of Object.entries(TOKEN_TICKERS)) {
     if (!ticker) {
       if (addr.includes("5fc5360d") || addr.includes("1383b43a")) prices[addr] = 1.0;
       continue;
     }
+    if (ticker === "STONK") {
+      prices[addr] = market.tokenPriceUsd;
+      continue;
+    }
+
     try {
       const res = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`);
       const d = await res.json();
       const p = d?.chart?.result?.[0]?.meta?.regularMarketPrice;
-      if (p) prices[addr] = p;
-    } catch {}
+      if (p) {
+        prices[addr] = p;
+      } else {
+        prices[addr] = FALLBACK_STOCK_PRICES[ticker] || 100;
+      }
+    } catch {
+      prices[addr] = FALLBACK_STOCK_PRICES[ticker] || 100;
+    }
     await sleep(150);
   }
 
@@ -104,7 +121,7 @@ async function loadPrices() {
 }
 
 async function getBurnEvents() {
-  console.log("Fetching NFT burn events to sanitize ledger...");
+  console.log("Fetching NFT burn events...");
   const burnEvents = [];
   const deadAddresses = [
     "0x000000000000000000000000000000000000dead",
@@ -139,7 +156,7 @@ async function getBurnEvents() {
 }
 
 async function fetchActivations() {
-  console.log("Fetching activation logs safely via Dynamic Block Pointer...");
+  console.log("Fetching activation logs via Dynamic Block Pointer...");
   let allLogs = [];
   
   let latestBlock = 35000000;
@@ -285,20 +302,19 @@ async function fetchActivations() {
   };
 }
 
-// Deep Pagination Yield Fetcher
 async function getGlobalYield(sevenDaysAgo) {
-  console.log("Fetching Global Yield logs (with deep pagination)...");
+  console.log("Fetching Global Yield logs across all protocol contracts...");
   let totalUsd = 0;
 
   for (const pAddr of PROTOCOL_CONTRACTS) {
     const pL = pAddr.toLowerCase();
     
-    // 1. ETH Native Transfers OUT
+    // 1. Native ETH Transfers OUT
     let pageEth = 1;
     while(true) {
         const urlEth = `${PRO_API}?chain_id=${CHAIN_ID}&module=account&action=txlistinternal&address=${pAddr}&page=${pageEth}&offset=10000&sort=desc&apikey=${API_KEY}`;
         const dataEth = await secureFetch(urlEth);
-        const txs = dataEth.result || [];
+        const txs = Array.isArray(dataEth.result) ? dataEth.result : [];
         if(txs.length === 0) break;
         
         let reachedOlder = false;
@@ -322,14 +338,14 @@ async function getGlobalYield(sevenDaysAgo) {
 
     // 2. ERC20 Token Transfers OUT
     for (const tokenAddr of Object.keys(TOKEN_TICKERS)) {
-      const price = prices[tokenAddr];
-      if (!price) continue;
+      const price = prices[tokenAddr] || 0;
+      if (price <= 0) continue;
       
       let pageTok = 1;
       while(true) {
           const urlTok = `${PRO_API}?chain_id=${CHAIN_ID}&module=account&action=tokentx&address=${pAddr}&contractaddress=${tokenAddr}&page=${pageTok}&offset=10000&sort=desc&apikey=${API_KEY}`;
           const dataTok = await secureFetch(urlTok);
-          const txs = dataTok.result || [];
+          const txs = Array.isArray(dataTok.result) ? dataTok.result : [];
           if(txs.length === 0) break;
 
           let reachedOlder = false;
@@ -340,7 +356,7 @@ async function getGlobalYield(sevenDaysAgo) {
             }
             if (tx.isError === "1") continue;
 
-            if ((tx.to || "").toLowerCase() !== pL) {
+            if ((tx.from || "").toLowerCase() === pL || (tx.to || "").toLowerCase() !== pL) {
               const decimals = tx.tokenDecimal ? parseInt(tx.tokenDecimal, 10) : 18;
               const amount = Number(tx.value || 0) / Math.pow(10, decimals);
               if (amount > 0) totalUsd += amount * price;
