@@ -1,88 +1,84 @@
 {
   "market": {
-    "ethPriceUsd": 1924.74,
-    "tokenPriceUsd": 0.03,
-    "nftFloorEth": 11.362,
-    "lastUpdated": "2026-08-09T17:00:16.164Z"
+    "ethPriceUsd": 1922.99,
+    "tokenPriceUsd": 0.02861,
+    "nftFloorEth": 10.91
   },
   "activation": {
-    "activeCount": 1664,
-    "percentActivated": 37.44374437443744,
-    "totalSupply": 4444,
+    "activeCount": 1662,
     "breakdown": {
-      "T0": 582,
-      "T1": 416,
-      "T2": 333,
-      "T3": 200,
-      "T4": 133
+      "T0": 1472,
+      "T1": 77,
+      "T2": 46,
+      "T3": 37,
+      "T4": 30
     },
+    "percentActivated": 37.4,
+    "totalSupply": 4444,
     "history": {
       "labels": [
         "7/1",
-        "7/5",
         "7/10",
-        "7/15",
         "7/20",
-        "7/25",
         "7/30",
-        "8/3",
-        "8/7",
+        "8/5",
         "Today"
       ],
       "cumulative": [
-        400,
-        650,
-        900,
-        1100,
-        1250,
-        1380,
-        1490,
-        1560,
-        1610,
-        1664
+        665,
+        997,
+        1247,
+        1413,
+        1579,
+        1662
       ]
     },
-    "dualSinkBurn": {
-      "totalBurnTokens": "299520000.0",
-      "equivalentBrokersBurnt": "449.28"
+    "dualBurn": {
+      "totalBurnTokens": 1188266.0904442712,
+      "equivalentBrokersBurnt": 1.78
     }
   },
   "tiers": [
     {
       "tier": "T0",
       "name": "Floor Trader",
-      "weight": 100,
       "reqTokens": 66666,
-      "trackedAnnualYieldUsd": 5447.1
+      "multiplier": "1.00x",
+      "weight": 100,
+      "trackedAnnualYieldUsd": 7056.004266705398
     },
     {
       "tier": "T1",
       "name": "Analyst",
-      "weight": 125,
       "reqTokens": 166666,
-      "trackedAnnualYieldUsd": 6808.87
+      "multiplier": "1.25x",
+      "weight": 125,
+      "trackedAnnualYieldUsd": 8820.005333381747
     },
     {
       "tier": "T2",
       "name": "Portfolio Manager",
-      "weight": 160,
       "reqTokens": 366666,
-      "trackedAnnualYieldUsd": 8715.36
+      "multiplier": "1.60x",
+      "weight": 160,
+      "trackedAnnualYieldUsd": 11289.606826728635
     },
     {
       "tier": "T3",
       "name": "Managing Director",
-      "weight": 200,
       "reqTokens": 666666,
-      "trackedAnnualYieldUsd": 10894.2
+      "multiplier": "2.00x",
+      "weight": 200,
+      "trackedAnnualYieldUsd": 14112.008533410795
     },
     {
       "tier": "T4",
       "name": "Partner",
-      "weight": 333,
       "reqTokens": 1666666,
-      "trackedAnnualYieldUsd": 18138.84
+      "multiplier": "3.33x",
+      "weight": 333,
+      "trackedAnnualYieldUsd": 23496.494208128974
     }
   ],
-  "lastUpdated": "2026-08-09T17:00:16.164Z"
+  "lastUpdated": "2026-08-09T17:06:52.864Z"
 }
