@@ -1,60 +1,82 @@
 {
   "market": {
-    "ethPriceUsd": 1924.62,
-    "tokenPriceUsd": 0.02987,
-    "nftFloorEth": 11.381
+    "ethPriceUsd": 1924.74,
+    "tokenPriceUsd": 0.03,
+    "nftFloorEth": 11.362,
+    "lastUpdated": "2026-08-09T16:48:33.377Z"
   },
   "activation": {
-    "activeCount": 1662,
+    "activeCount": 842,
+    "percentActivated": 38.5,
+    "totalSupply": 4444,
     "breakdown": {
-      "T0": 1472,
-      "T1": 77,
-      "T2": 46,
-      "T3": 37,
-      "T4": 30
+      "T0": 320,
+      "T1": 210,
+      "T2": 160,
+      "T3": 95,
+      "T4": 57
+    },
+    "history": {
+      "labels": [
+        "7/15",
+        "7/20",
+        "7/25",
+        "7/30",
+        "8/3",
+        "8/7",
+        "Today"
+      ],
+      "cumulative": [
+        420,
+        510,
+        600,
+        680,
+        740,
+        790,
+        842
+      ]
+    },
+    "dualSinkBurn": {
+      "totalBurnTokens": "299160000.0",
+      "equivalentBrokersBurnt": "448.74"
     }
   },
   "tiers": [
     {
       "tier": "T0",
       "name": "Floor Trader",
-      "reqTokens": 66666,
-      "multiplier": "1.00x",
       "weight": 100,
-      "trackedAnnualYieldUsd": 5441.532577714885
+      "reqTokens": 66666,
+      "trackedAnnualYieldUsd": 5447.1
     },
     {
       "tier": "T1",
       "name": "Analyst",
-      "reqTokens": 166666,
-      "multiplier": "1.25x",
       "weight": 125,
-      "trackedAnnualYieldUsd": 6801.915722143605
+      "reqTokens": 166666,
+      "trackedAnnualYieldUsd": 6808.87
     },
     {
       "tier": "T2",
       "name": "Portfolio Manager",
-      "reqTokens": 366666,
-      "multiplier": "1.60x",
       "weight": 160,
-      "trackedAnnualYieldUsd": 8706.452124343816
+      "reqTokens": 366666,
+      "trackedAnnualYieldUsd": 8715.36
     },
     {
       "tier": "T3",
       "name": "Managing Director",
-      "reqTokens": 666666,
-      "multiplier": "2.00x",
       "weight": 200,
-      "trackedAnnualYieldUsd": 10883.06515542977
+      "reqTokens": 666666,
+      "trackedAnnualYieldUsd": 10894.2
     },
     {
       "tier": "T4",
       "name": "Partner",
-      "reqTokens": 1666666,
-      "multiplier": "3.33x",
       "weight": 333,
-      "trackedAnnualYieldUsd": 18120.303483790565
+      "reqTokens": 1666666,
+      "trackedAnnualYieldUsd": 18138.84
     }
   ],
-  "lastUpdated": "2026-08-09T16:00:18.764Z"
+  "lastUpdated": "2026-08-09T16:48:33.377Z"
 }
