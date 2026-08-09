@@ -1,8 +1,8 @@
 {
   "market": {
-    "ethPriceUsd": 1923.17,
-    "tokenPriceUsd": 0.02873,
-    "nftFloorEth": 10.955
+    "ethPriceUsd": 1923.16,
+    "tokenPriceUsd": 0.02838,
+    "nftFloorEth": 10.822
   },
   "activation": {
     "activeCount": 1662,
@@ -34,8 +34,8 @@
       ]
     },
     "dualBurn": {
-      "totalBurnTokens": 1188266.0904442712,
-      "equivalentBrokersBurnt": 1.78
+      "totalBurnTokens": 782999217,
+      "equivalentBrokersBurnt": 1174.5
     }
   },
   "tiers": [
@@ -45,7 +45,7 @@
       "reqTokens": 66666,
       "multiplier": "1.00x",
       "weight": 100,
-      "trackedAnnualYieldUsd": 5443.040367106231
+      "trackedAnnualYieldUsd": 5438.1486797891075
     },
     {
       "tier": "T1",
@@ -53,7 +53,7 @@
       "reqTokens": 166666,
       "multiplier": "1.25x",
       "weight": 125,
-      "trackedAnnualYieldUsd": 6803.80045888279
+      "trackedAnnualYieldUsd": 6797.685849736385
     },
     {
       "tier": "T2",
@@ -61,7 +61,7 @@
       "reqTokens": 366666,
       "multiplier": "1.60x",
       "weight": 160,
-      "trackedAnnualYieldUsd": 8708.86458736997
+      "trackedAnnualYieldUsd": 8701.037887662573
     },
     {
       "tier": "T3",
@@ -69,7 +69,7 @@
       "reqTokens": 666666,
       "multiplier": "2.00x",
       "weight": 200,
-      "trackedAnnualYieldUsd": 10886.080734212463
+      "trackedAnnualYieldUsd": 10876.297359578215
     },
     {
       "tier": "T4",
@@ -77,8 +77,8 @@
       "reqTokens": 1666666,
       "multiplier": "3.33x",
       "weight": 333,
-      "trackedAnnualYieldUsd": 18125.32442246375
+      "trackedAnnualYieldUsd": 18109.03510369773
     }
   ],
-  "lastUpdated": "2026-08-09T17:21:11.571Z"
+  "lastUpdated": "2026-08-09T17:27:06.324Z"
 }
