@@ -1,14 +1,14 @@
 {
   "market": {
-    "ethPriceUsd": 1920.89,
-    "tokenPriceUsd": 0.02897,
-    "nftFloorEth": 11.06
+    "ethPriceUsd": 1916.54,
+    "tokenPriceUsd": 0.03195,
+    "nftFloorEth": 12.225
   },
   "activation": {
     "activeCount": 1662,
     "breakdown": {
-      "T0": 1473,
-      "T1": 77,
+      "T0": 1472,
+      "T1": 78,
       "T2": 46,
       "T3": 36,
       "T4": 30
@@ -17,25 +17,27 @@
     "totalSupply": 4444,
     "history": {
       "labels": [
-        "7/1",
-        "7/10",
+        "7/15",
         "7/20",
+        "7/25",
         "7/30",
-        "8/5",
+        "8/3",
+        "8/7",
         "Today"
       ],
       "cumulative": [
+        416,
         665,
         997,
-        1247,
-        1413,
+        1330,
+        1496,
         1579,
         1662
       ]
     },
     "dualBurn": {
-      "totalBurnTokens": 783332550,
-      "equivalentBrokersBurnt": 1175
+      "totalBurnTokens": 133620815,
+      "equivalentBrokersBurnt": 200.43
     }
   },
   "tiers": [
@@ -45,7 +47,7 @@
       "reqTokens": 66666,
       "multiplier": "1.00x",
       "weight": 100,
-      "trackedAnnualYieldUsd": 5453.400314219944
+      "trackedAnnualYieldUsd": 5593.768061160412
     },
     {
       "tier": "T1",
@@ -53,7 +55,7 @@
       "reqTokens": 166666,
       "multiplier": "1.25x",
       "weight": 125,
-      "trackedAnnualYieldUsd": 6816.75039277493
+      "trackedAnnualYieldUsd": 6992.210076450515
     },
     {
       "tier": "T2",
@@ -61,7 +63,7 @@
       "reqTokens": 366666,
       "multiplier": "1.60x",
       "weight": 160,
-      "trackedAnnualYieldUsd": 8725.440502751911
+      "trackedAnnualYieldUsd": 8950.02889785666
     },
     {
       "tier": "T3",
@@ -69,7 +71,7 @@
       "reqTokens": 666666,
       "multiplier": "2.00x",
       "weight": 200,
-      "trackedAnnualYieldUsd": 10906.800628439889
+      "trackedAnnualYieldUsd": 11187.536122320824
     },
     {
       "tier": "T4",
@@ -77,8 +79,8 @@
       "reqTokens": 1666666,
       "multiplier": "3.33x",
       "weight": 333,
-      "trackedAnnualYieldUsd": 18159.823046352416
+      "trackedAnnualYieldUsd": 18627.247643664174
     }
   ],
-  "lastUpdated": "2026-08-09T18:36:07.451Z"
+  "lastUpdated": "2026-08-09T22:42:52.562Z"
 }
