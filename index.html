@@ -306,7 +306,6 @@
             let pctActivated = act.percentActivated || 0;
             const totalSupply = act.totalSupply || 4444;
             
-            // Safe fallback ratio calculation if missing
             if (pctActivated === 0 && totalSupply > 0) {
                 pctActivated = (activeCount / totalSupply) * 100;
             }
@@ -317,34 +316,24 @@
             let rawLabels = history.labels;
             let rawValues = history.cumulative;
 
-            // If history only contains 2 data points, generate smooth daily interpolation points for a true multi-plot daily chart
-            if (rawLabels.length <= 2) {
-                const startVal = rawValues[0] || 0;
-                const endVal = rawValues[1] || activeCount;
-                rawLabels = ["7/15", "7/20", "7/25", "7/30", "8/3", "8/7", "Today"];
-                rawValues = [
-                    Math.round(startVal),
-                    Math.round(startVal + (endVal - startVal) * 0.2),
-                    Math.round(startVal + (endVal - startVal) * 0.4),
-                    Math.round(startVal + (endVal - startVal) * 0.6),
-                    Math.round(startVal + (endVal - startVal) * 0.8),
-                    Math.round(startVal + (endVal - startVal) * 0.95),
-                    endVal
-                ];
-            }
-
-            let estimatedBurn = activeCount * 180000;
-            let equivNfts = estimatedBurn / 666666;
+            // Dynamically pull the exact dualBurn payload calculated by fetcher.js
+            const dualBurn = act.dualBurn || {};
+            const totalBurn = dualBurn.totalBurnTokens || (activeCount * 180000);
+            const equivNfts = dualBurn.equivalentBrokersBurnt || (totalBurn / 666666);
             
-            document.getElementById('stat-total-burn').innerText = formatNumber(estimatedBurn) + " STONK";
+            document.getElementById('stat-total-burn').innerText = formatNumber(totalBurn) + " STONK";
             document.getElementById('stat-equiv-nfts').innerText = formatNumber(equivNfts, 2) + " Brokers";
 
             document.getElementById('stat-pct-activated').innerText = pctActivated.toFixed(2) + "%";
             document.getElementById('stat-active-count').innerText = formatNumber(activeCount) + " Units";
 
+            // Scale the historical burn chart line to precisely hit the new target total on the final node
+            const maxActive = rawValues[rawValues.length - 1] || 1;
+            const scaledBurnHistory = rawValues.map(v => (v / maxActive) * totalBurn);
+
             window.burnChartData = {
                 labels: rawLabels,
-                burnHistory: rawValues.map(v => v * 150000)
+                burnHistory: scaledBurnHistory
             };
 
             window.activationChartData = {
@@ -387,7 +376,7 @@
                             grid: { color: '#334155', borderDash: [4, 4] }, 
                             ticks: { 
                                 color: '#94a3b8',
-                                callback: (value) => (value >= 1000 ? (value / 1000).toFixed(0) + 'k' : value)
+                                callback: (value) => (value >= 1000 ? (value / 1000000).toFixed(1) + 'M' : value)
                             } 
                         }
                     }
