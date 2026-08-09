@@ -1,10 +1,9 @@
 const { ethers } = require("ethers");
 const fs = require("fs");
 
-// Contract & RPC Configurations for StonkBrokers Protocol
-const RPC_URL = "https://rpc.ankr.com/arbitrum"; // Or your active L2/EVM provider RPC
+const RPC_URL = "https://rpc.ankr.com/arbitrum";
 const ACTIVATION_CONTRACT = "0xacd5ae3c060c1137fe2ee86b0ab2ef697456f664";
-const STONK_TOKEN_CONTRACT = "0x539cdd042c2f3d93ebc5be7dfff0c79f3b4fabf0"; // Example token contract if querying balance directly
+const STONK_TOKEN_CONTRACT = "0x539cdd042c2f3d93ebc5be7dfff0c79f3b4fabf0";
 
 const DEAD_ADDRESSES = [
   "0x000000000000000000000000000000000000dead",
@@ -14,23 +13,21 @@ const DEAD_ADDRESSES = [
 async function runFetcher() {
   console.log("Starting StonkBrokers Dual-Sink Burn & ROI Fetcher (Staging)...");
   
-  const provider = new ethers.JsonRpcProvider(RPC_URL);
+  // Explicitly passing network configuration to prevent connection hang loops
+  const network = { name: "arbitrum", chainId: 42161 };
+  const provider = new ethers.JsonRpcProvider(RPC_URL, network, { staticNetwork: true });
 
-  // 1. Fetch Token Balances / Contract Sinks (Dual-Sink Accounting)
-  // Sink 1: Check balance/tokens locked in the Activation Manager contract
   let contractLockedTokens = 0n;
   try {
-    // If querying standard ERC20 balance of the activation contract:
     const erc20Abi = ["function balanceOf(address account) view returns (uint256)"];
     const tokenContract = new ethers.Contract(STONK_TOKEN_CONTRACT, erc20Abi, provider);
     contractLockedTokens = await tokenContract.balanceOf(ACTIVATION_CONTRACT);
     console.log("Tokens locked in Activation Contract:", ethers.formatUnits(contractLockedTokens, 18));
   } catch (err) {
-    console.warn("Could not fetch contract balance directly via RPC, using fallback estimation:", err.message);
-    contractLockedTokens = ethers.parseUnits("145000000", 18); // Fallback baseline
+    console.warn("Could not fetch contract balance directly, using fallback estimation:", err.message);
+    contractLockedTokens = ethers.parseUnits("145000000", 18);
   }
 
-  // 2. Fetch Direct Burn Address Balances / Transfers
   let directBurnTokens = 0n;
   try {
     const erc20Abi = ["function balanceOf(address account) view returns (uint256)"];
@@ -42,17 +39,14 @@ async function runFetcher() {
     console.log("Tokens in Direct Burn Addresses:", ethers.formatUnits(directBurnTokens, 18));
   } catch (err) {
     console.warn("Could not fetch direct burn balance:", err.message);
-    directBurnTokens = ethers.parseUnits("154160000", 18); // Fallback baseline
+    directBurnTokens = ethers.parseUnits("154160000", 18);
   }
 
-  // Combined Total Deflationary Supply (Direct Burns + Permanently Locked Activation Sinks)
   const totalCombinedBurnedTokens = directBurnTokens + contractLockedTokens;
   const estimatedBrokersBurnt = Number(ethers.formatUnits(totalCombinedBurnedTokens, 18)) / 666666;
 
   console.log(`Calculated Total Burnt / Locked Equivalent: ~${estimatedBrokersBurnt.toFixed(2)} Brokers`);
 
-  // 3. Market Data & Tier Metrics Structure
-  // Maintaining your exact live math structure for the frontend payload
   const marketData = {
     ethPriceUsd: 1924.74,
     tokenPriceUsd: 0.03,
@@ -61,7 +55,7 @@ async function runFetcher() {
   };
 
   const activationMetrics = {
-    activeCount: 842, // Updated matching dual-sink milestone
+    activeCount: 842,
     percentActivated: 38.5,
     totalSupply: 4444,
     breakdown: { T0: 320, T1: 210, T2: 160, T3: 95, T4: 57 },
@@ -90,9 +84,8 @@ async function runFetcher() {
     lastUpdated: marketData.lastUpdated
   };
 
-  // Write out to data.json for testing on your staging branch
   fs.writeFileSync("data.json", JSON.stringify(payload, null, 2));
-  console.log("Successfully generated staging data.json with dual-sink burn accounting!");
+  console.log("Successfully generated staging data.json!");
 }
 
 runFetcher().catch(console.error);
