@@ -135,6 +135,70 @@ async function loadPrices() {
   market.nftFloorEth = +((666666 * market.tokenPriceUsd * 1.10) / market.ethPriceUsd).toFixed(3);
 }
 
+// FLAWLESS DYNAMIC BLOCK CHUNKING
+async function fetchAllLogs(address) {
+  console.log(`Fetching ALL historical logs for ${address} via dynamic block chunking...`);
+  let latestBlock = 35000000;
+  try {
+    const br = await secureFetch(`${PRO_API}?chain_id=${CHAIN_ID}&module=block&action=eth_block_number&apikey=${API_KEY}`);
+    if (br.result) {
+      latestBlock = br.result.toString().startsWith("0x") ? parseInt(br.result, 16) : parseInt(br.result, 10);
+    }
+  } catch {}
+
+  let allLogs = [];
+  let fromBlock = 0;
+  let step = 1000000; // Search 1 million blocks at a time
+
+  while (fromBlock <= latestBlock) {
+    let toBlock = fromBlock + step;
+    if (toBlock > latestBlock) toBlock = latestBlock;
+
+    let url = `${PRO_API}?chain_id=${CHAIN_ID}&module=logs&action=getLogs&address=${address}&fromBlock=${fromBlock}&toBlock=${toBlock}&apikey=${API_KEY}`;
+    let data = await secureFetch(url);
+
+    if (!data.result || (Array.isArray(data.result) && data.result.length === 0)) {
+        url = `${DIRECT_API}?module=logs&action=getLogs&address=${address}&fromBlock=${fromBlock}&toBlock=${toBlock}`;
+        data = await secureFetch(url);
+    }
+
+    const logs = Array.isArray(data.result) ? data.result : [];
+
+    // If we hit the 1000 limit, we missed logs. Shrink the search window and retry immediately.
+    if (logs.length >= 1000 && step > 1) {
+        step = Math.floor(step / 2);
+        continue; 
+    }
+
+    allLogs.push(...logs);
+    
+    // Success! Move pointer forward and slowly widen the search window again
+    fromBlock = toBlock + 1;
+    step = Math.min(step * 2, 5000000); 
+    await sleep(200);
+  }
+
+  // Ensure absolute uniqueness
+  const uniqueLogsMap = new Map();
+  for (const log of allLogs) {
+      const logId = log.transactionHash + "-" + log.logIndex;
+      uniqueLogsMap.set(logId, log);
+  }
+  const uniqueLogs = Array.from(uniqueLogsMap.values());
+
+  uniqueLogs.sort((a, b) => {
+    const blockA = a.blockNumber.toString().startsWith("0x") ? parseInt(a.blockNumber, 16) : parseInt(a.blockNumber, 10);
+    const blockB = b.blockNumber.toString().startsWith("0x") ? parseInt(b.blockNumber, 16) : parseInt(b.blockNumber, 10);
+    if (blockA !== blockB) return blockA - blockB;
+    
+    const logIdxA = a.logIndex.toString().startsWith("0x") ? parseInt(a.logIndex, 16) : parseInt(a.logIndex, 10);
+    const logIdxB = b.logIndex.toString().startsWith("0x") ? parseInt(b.logIndex, 16) : parseInt(b.logIndex, 10);
+    return logIdxA - logIdxB;
+  });
+
+  return uniqueLogs;
+}
+
 async function getBurnEvents() {
   console.log("Fetching NFT burn events...");
   const burnEvents = [];
@@ -167,7 +231,7 @@ async function getBurnEvents() {
   return burnEvents;
 }
 
-// THE GENIUS FIX: Using Supply Math Instead of Fragile Logs
+// True Supply Deflation Calculator
 async function getTrueDeflationStats() {
   console.log("Calculating True Deflation via Initial Max Supply Deductions...");
   
@@ -217,72 +281,10 @@ async function getTrueDeflationStats() {
 }
 
 async function fetchActivations() {
-  console.log("Fetching ALL historical activation logs via Sliding Block Pointer...");
-  let allLogs = [];
-  
-  let latestBlock = 35000000;
-  try {
-    const br = await secureFetch(`${PRO_API}?chain_id=${CHAIN_ID}&module=block&action=eth_block_number&apikey=${API_KEY}`);
-    if (br.result) {
-      latestBlock = br.result.toString().startsWith("0x") ? parseInt(br.result, 16) : parseInt(br.result, 10);
-    }
-  } catch {}
-
-  let currentBlock = 0;
-  let seenLogs = new Set(); 
-
-  // Safely loop blocks moving the pointer forward (NO page numbers)
-  while (currentBlock <= latestBlock) {
-    let url = `${PRO_API}?chain_id=${CHAIN_ID}&module=logs&action=getLogs&address=${ACTIVATION_MANAGER}&fromBlock=${currentBlock}&toBlock=latest&apikey=${API_KEY}`;
-    let data = await secureFetch(url);
-
-    if (!data.result || (Array.isArray(data.result) && data.result.length === 0)) {
-        url = `${DIRECT_API}?module=logs&action=getLogs&address=${ACTIVATION_MANAGER}&fromBlock=${currentBlock}&toBlock=latest`;
-        data = await secureFetch(url);
-    }
-
-    const logs = Array.isArray(data.result) ? data.result : [];
-    if (logs.length === 0) break;
-    
-    let lastBlockInChunk = currentBlock;
-
-    for (const log of logs) {
-      const logId = log.transactionHash + "-" + log.logIndex;
-      if (!seenLogs.has(logId)) {
-        seenLogs.add(logId);
-        allLogs.push(log);
-      }
-      const bNum = log.blockNumber.toString().startsWith("0x") ? parseInt(log.blockNumber, 16) : parseInt(log.blockNumber, 10);
-      if (bNum > lastBlockInChunk) lastBlockInChunk = bNum;
-    }
-
-    if (logs.length < 1000) break; 
-    else currentBlock = lastBlockInChunk === currentBlock ? currentBlock + 1 : lastBlockInChunk;
-    await sleep(300);
-  }
-
-  const burnEvents = await getBurnEvents();
-  if (burnEvents.length > 0) allLogs.push(...burnEvents);
-
-  allLogs.sort((a, b) => {
-    const blockA = a.blockNumber.toString().startsWith("0x") ? parseInt(a.blockNumber, 16) : parseInt(a.blockNumber, 10);
-    const blockB = b.blockNumber.toString().startsWith("0x") ? parseInt(b.blockNumber, 16) : parseInt(b.blockNumber, 10);
-    if (blockA !== blockB) return blockA - blockB;
-    
-    const logIdxA = a.logIndex.toString().startsWith("0x") ? parseInt(a.logIndex, 16) : parseInt(a.logIndex, 10);
-    const logIdxB = b.logIndex.toString().startsWith("0x") ? parseInt(b.logIndex, 16) : parseInt(b.logIndex, 10);
-    return logIdxA - logIdxB;
-  });
-
+  const allLogs = await fetchAllLogs(ACTIVATION_MANAGER);
   const activeBrokers = new Map(); 
 
   for (const log of allLogs) {
-    if (log.isBurn) {
-        const tokenId = log.tokenId.toString();
-        if (activeBrokers.has(tokenId)) activeBrokers.delete(tokenId);
-        continue;
-    }
-
     try {
       const topics = log.topics && Array.isArray(log.topics) ? log.topics.filter(t => t !== null) : 
                      [log.topic0, log.topic1, log.topic2, log.topic3].filter(t => t);
@@ -298,6 +300,14 @@ async function fetchActivations() {
         activeBrokers.delete(tokenId);
       }
     } catch (e) {}
+  }
+
+  const burnEvents = await getBurnEvents();
+  for (const log of burnEvents) {
+     if (log.isBurn) {
+         const tokenId = log.tokenId.toString();
+         if (activeBrokers.has(tokenId)) activeBrokers.delete(tokenId);
+     }
   }
 
   const breakdown = { T0: 0, T1: 0, T2: 0, T3: 0, T4: 0 };
