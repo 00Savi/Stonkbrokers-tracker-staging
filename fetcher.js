@@ -13,23 +13,43 @@ async function getGlobalYield(sevenDaysAgo, activationStats) {
       const urlEth = `${PRO_API}?chain_id=${CHAIN_ID}&module=account&action=txlistinternal&address=${SAMPLE_WALLET}&page=${pageEth}&offset=1000&sort=desc&apikey=${API_KEY}`;
       const dataEth = await secureFetch(urlEth);
       const txs = Array.isArray(dataEth.result) ? dataEth.result : [];
-      if(txs.length === 0) break;
+      
+      if(txs.length === 0) {
+         console.log(`  -> API returned 0 internal txs on page ${pageEth}.`);
+         break;
+      }
+
+      // DEBUG: Print the exact structure of the first transaction so we can see the keys
+      if (pageEth === 1 && txs.length > 0) {
+         console.log("  -> DEBUG FIRST TX JSON STRUCTURE:", JSON.stringify(txs[0]));
+      }
       
       let reachedOlder = false;
       for (const tx of txs) {
-        const ts = parseInt(tx.timeStamp || 0, 10);
+        // Aggressive timestamp checking
+        const rawTs = tx.timeStamp || tx.timestamp || tx.UnixTimestamp || tx.unixtimestamp || 0;
+        const ts = parseInt(rawTs, 10);
+        
+        if (ts === 0) {
+            console.log("  -> WARNING: Could not find timestamp on tx!");
+            continue;
+        }
+
         if (ts < sevenDaysAgo) {
           reachedOlder = true;
           continue;
         }
-        if (tx.isError === "1") continue;
         
-        // Loosen JSON parsing to catch all possible Blockscout sender keys
+        // Some APIs use 1 for error, some use "1", some omit it entirely if success
+        if (tx.isError === "1" || tx.isError === 1 || (tx.errCode && tx.errCode !== "")) continue;
+        
+        // Aggressive address mapping
         const fromAddr = (tx.from || tx.fromAddress || tx.contractAddress || "").toLowerCase();
         const toAddr = (tx.to || tx.toAddress || "").toLowerCase();
         
         if (PROTOCOL_CONTRACTS.includes(fromAddr) && toAddr === SAMPLE_WALLET) {
-          const eth = Number(tx.value || 0) / 1e18;
+          const rawValue = tx.value || tx.Value || 0;
+          const eth = Number(rawValue) / 1e18;
           if (eth > 0) sampleEthInflow += eth;
         }
       }
@@ -55,18 +75,25 @@ async function getGlobalYield(sevenDaysAgo, activationStats) {
 
         let reachedOlder = false;
         for (const tx of txs) {
-          const ts = parseInt(tx.timeStamp || 0, 10);
+          const rawTs = tx.timeStamp || tx.timestamp || tx.UnixTimestamp || tx.unixtimestamp || 0;
+          const ts = parseInt(rawTs, 10);
+          
           if (ts < sevenDaysAgo) {
             reachedOlder = true;
             continue;
           }
           
+          if (tx.isError === "1" || tx.isError === 1) continue;
+          
           const fromAddr = (tx.from || tx.fromAddress || "").toLowerCase();
           const toAddr = (tx.to || tx.toAddress || "").toLowerCase();
           
           if (PROTOCOL_CONTRACTS.includes(fromAddr) && toAddr === SAMPLE_WALLET) {
-            const decimals = tx.tokenDecimal ? parseInt(tx.tokenDecimal, 10) : 18;
-            const amount = Number(tx.value || 0) / Math.pow(10, decimals);
+            const decRaw = tx.tokenDecimal || tx.decimals || 18;
+            const decimals = parseInt(decRaw, 10);
+            const rawValue = tx.value || tx.Value || 0;
+            const amount = Number(rawValue) / Math.pow(10, decimals);
+            
             if (amount > 0) sampleErc20Usd += (amount * price);
           }
         }
@@ -82,10 +109,6 @@ async function getGlobalYield(sevenDaysAgo, activationStats) {
   const sampleEthUsd = sampleEthInflow * market.ethPriceUsd;
   const totalSampleUsd = sampleEthUsd + sampleErc20Usd;
   
-  if (totalSampleUsd === 0) {
-      console.log("WARNING: Zero yield tracked. Check API response mapping.");
-  }
-
   // Calculate Extrapolated Global Yield
   let totalNetworkWeight = 0;
   for (const t of tierStructure) {
