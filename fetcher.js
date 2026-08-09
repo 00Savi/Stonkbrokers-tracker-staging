@@ -13,7 +13,7 @@ const DEAD_ADDRESSES = [
 async function runFetcher() {
   console.log("Starting StonkBrokers Dual-Sink Burn & ROI Fetcher (Staging)...");
   
-  // Explicitly passing network configuration to prevent connection hang loops
+  // Explicitly passing network configuration and staticNetwork to bypass auto-detection hangs
   const network = { name: "arbitrum", chainId: 42161 };
   const provider = new ethers.JsonRpcProvider(RPC_URL, network, { staticNetwork: true });
 
