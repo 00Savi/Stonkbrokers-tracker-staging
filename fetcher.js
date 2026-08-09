@@ -175,14 +175,12 @@ async function getTrueDeflationStats() {
   let deadBalance = 0;
   let lockedBalance = 0;
 
-  // 1. Check current total supply to catch native protocol burns invisibly destroyed
   try {
     const supplyUrl = `${PRO_API}?chain_id=${CHAIN_ID}&module=stats&action=tokensupply&contractaddress=${STONK_TOKEN_CONTRACT}&apikey=${API_KEY}`;
     const res = await secureFetch(supplyUrl);
     if (res && res.result) currentSupply = Number(res.result) / 1e18;
   } catch(e) {}
 
-  // 2. Fetch standard dead wallet balances
   const deadAddresses = ["0x000000000000000000000000000000000000dead", "0x0000000000000000000000000000000000000000"];
   try {
     for (const addr of deadAddresses) {
@@ -193,25 +191,21 @@ async function getTrueDeflationStats() {
     }
   } catch (e) {}
 
-  // 3. Fetch trapped tokens inside the Activation Contract
   try {
     const url = `${PRO_API}?chain_id=${CHAIN_ID}&module=account&action=tokenbalance&contractaddress=${STONK_TOKEN_CONTRACT}&address=${ACTIVATION_MANAGER}&apikey=${API_KEY}`;
     const res = await secureFetch(url);
     if (res && res.result) lockedBalance += Number(res.result) / 1e18;
   } catch(e) {}
 
-  // The Unbreakable Formula: Native Burns + Dead Addresses + Locked Contract Sinks
   const nativeBurn = Math.max(0, MAX_STONK_SUPPLY - currentSupply);
   let totalBurnTokens = nativeBurn + deadBalance + lockedBalance;
 
-  // Final RPC fallback failsafe to guarantee the dashboard matches the official site if the API drops
   if (totalBurnTokens < 1000000) {
       totalBurnTokens = 533790000;
   }
 
   const equivalentBrokersBurnt = totalBurnTokens / 666666;
 
-  console.log(`  -> Max Genesis Supply: ${MAX_STONK_SUPPLY.toLocaleString()}`);
   console.log(`  -> Native Tokens Destroyed: ${nativeBurn.toLocaleString()}`);
   console.log(`  -> Tokens in Sinks & Traps: ${(deadBalance + lockedBalance).toLocaleString()}`);
   console.log(`  -> Total Combined Deflation: ${totalBurnTokens.toLocaleString()} STONK (~${equivalentBrokersBurnt.toFixed(2)} Brokers)`);
@@ -223,33 +217,53 @@ async function getTrueDeflationStats() {
 }
 
 async function fetchActivations() {
-  console.log("Fetching ALL historical activation logs via Strict Pagination...");
+  console.log("Fetching ALL historical activation logs via Sliding Block Pointer...");
   let allLogs = [];
-  let page = 1;
+  
+  let latestBlock = 35000000;
+  try {
+    const br = await secureFetch(`${PRO_API}?chain_id=${CHAIN_ID}&module=block&action=eth_block_number&apikey=${API_KEY}`);
+    if (br.result) {
+      latestBlock = br.result.toString().startsWith("0x") ? parseInt(br.result, 16) : parseInt(br.result, 10);
+    }
+  } catch {}
 
-  // Use page/offset pagination to strictly bypass the 1000-limit safely
-  while (true) {
-    let url = `${PRO_API}?chain_id=${CHAIN_ID}&module=logs&action=getLogs&address=${ACTIVATION_MANAGER}&fromBlock=0&toBlock=latest&page=${page}&offset=1000&apikey=${API_KEY}`;
+  let currentBlock = 0;
+  let seenLogs = new Set(); 
+
+  // Safely loop blocks moving the pointer forward (NO page numbers)
+  while (currentBlock <= latestBlock) {
+    let url = `${PRO_API}?chain_id=${CHAIN_ID}&module=logs&action=getLogs&address=${ACTIVATION_MANAGER}&fromBlock=${currentBlock}&toBlock=latest&apikey=${API_KEY}`;
     let data = await secureFetch(url);
 
     if (!data.result || (Array.isArray(data.result) && data.result.length === 0)) {
-        url = `${DIRECT_API}?module=logs&action=getLogs&address=${ACTIVATION_MANAGER}&fromBlock=0&toBlock=latest&page=${page}&offset=1000`;
+        url = `${DIRECT_API}?module=logs&action=getLogs&address=${ACTIVATION_MANAGER}&fromBlock=${currentBlock}&toBlock=latest`;
         data = await secureFetch(url);
     }
 
     const logs = Array.isArray(data.result) ? data.result : [];
     if (logs.length === 0) break;
+    
+    let lastBlockInChunk = currentBlock;
 
-    allLogs.push(...logs);
-
-    if (logs.length < 1000) {
-        break; // End of historical data reached
+    for (const log of logs) {
+      const logId = log.transactionHash + "-" + log.logIndex;
+      if (!seenLogs.has(logId)) {
+        seenLogs.add(logId);
+        allLogs.push(log);
+      }
+      const bNum = log.blockNumber.toString().startsWith("0x") ? parseInt(log.blockNumber, 16) : parseInt(log.blockNumber, 10);
+      if (bNum > lastBlockInChunk) lastBlockInChunk = bNum;
     }
-    page++;
+
+    if (logs.length < 1000) break; 
+    else currentBlock = lastBlockInChunk === currentBlock ? currentBlock + 1 : lastBlockInChunk;
     await sleep(300);
   }
 
-  // Sort chronologically by block and logIndex
+  const burnEvents = await getBurnEvents();
+  if (burnEvents.length > 0) allLogs.push(...burnEvents);
+
   allLogs.sort((a, b) => {
     const blockA = a.blockNumber.toString().startsWith("0x") ? parseInt(a.blockNumber, 16) : parseInt(a.blockNumber, 10);
     const blockB = b.blockNumber.toString().startsWith("0x") ? parseInt(b.blockNumber, 16) : parseInt(b.blockNumber, 10);
@@ -263,6 +277,12 @@ async function fetchActivations() {
   const activeBrokers = new Map(); 
 
   for (const log of allLogs) {
+    if (log.isBurn) {
+        const tokenId = log.tokenId.toString();
+        if (activeBrokers.has(tokenId)) activeBrokers.delete(tokenId);
+        continue;
+    }
+
     try {
       const topics = log.topics && Array.isArray(log.topics) ? log.topics.filter(t => t !== null) : 
                      [log.topic0, log.topic1, log.topic2, log.topic3].filter(t => t);
@@ -280,15 +300,6 @@ async function fetchActivations() {
     } catch (e) {}
   }
 
-  const burnEvents = await getBurnEvents();
-  for (const log of burnEvents) {
-     if (log.isBurn) {
-         const tokenId = log.tokenId.toString();
-         if (activeBrokers.has(tokenId)) activeBrokers.delete(tokenId);
-     }
-  }
-
-  // Generate exact Pie Chart distribution
   const breakdown = { T0: 0, T1: 0, T2: 0, T3: 0, T4: 0 };
   for (const tier of activeBrokers.values()) {
     if (breakdown[tier] !== undefined) breakdown[tier]++;
@@ -309,7 +320,6 @@ async function fetchActivations() {
     activeCount
   ];
 
-  // Execute the flawless, logic-based supply deflation calculation
   const dualBurn = await getTrueDeflationStats();
 
   return { 
@@ -333,7 +343,6 @@ async function getGlobalYield(sevenDaysAgo, activationStats) {
   let sampleEthInflow = 0;
   let sampleErc20Usd = 0;
 
-  console.log("1. Tracking Native ETH deposited to Oracle Wallet...");
   let pageEth = 1;
   while(true) {
       let urlEth = `${PRO_API}?chain_id=${CHAIN_ID}&module=account&action=txlistinternal&address=${SAMPLE_WALLET}&page=${pageEth}&offset=1000&sort=desc&apikey=${API_KEY}`;
@@ -370,7 +379,6 @@ async function getGlobalYield(sevenDaysAgo, activationStats) {
       await sleep(300);
   }
 
-  console.log("2. Tracking Tracked ERC-20 Tokens deposited to Oracle Wallet...");
   for (const tokenAddr of Object.keys(TOKEN_TICKERS)) {
     const price = prices[tokenAddr] || 0;
     if (price <= 0) continue;
