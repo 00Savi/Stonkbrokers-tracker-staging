@@ -47,7 +47,6 @@
         </div>
     </header>
 
-    <!-- NEW PHASE 3: Added Ownership Stats Tab -->
     <div class="max-w-6xl mx-auto flex flex-wrap gap-3 md:gap-4 mb-6">
         <button id="tab-roi" onclick="switchTab('roi')" class="flex-1 sm:flex-none justify-center bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition shadow-lg shadow-blue-500/25">
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 0h8v12H6V4zm2 2v2h4V6H8zm0 4v2h4v-2H8zm0 4v2h4v-2H8z"></path></svg>
@@ -67,7 +66,6 @@
         </button>
     </div>
 
-    <!-- View 1: Tier ROI Benchmarks -->
     <main id="view-roi" class="max-w-6xl mx-auto card rounded-2xl border p-4 md:p-6 mb-8 shadow-xl overflow-hidden">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-8 gap-4">
             <div>
@@ -98,7 +96,6 @@
         </div>
     </main>
 
-    <!-- View 2: Burn Tracker -->
     <main id="view-burn" class="max-w-6xl mx-auto card rounded-2xl border p-4 md:p-6 mb-8 shadow-xl hidden">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div>
@@ -138,7 +135,6 @@
         </div>
     </main>
 
-    <!-- View 3: Ecosystem Activation -->
     <main id="view-activation" class="max-w-6xl mx-auto card rounded-2xl border p-4 md:p-6 mb-8 shadow-xl hidden">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div>
@@ -224,21 +220,26 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <div class="bg-[#0f172a] border border-[#334155] rounded-xl p-5 shadow-inner">
-                <p class="text-xs uppercase tracking-wider text-slate-400 mb-1">True Circulating NFTs</p>
-                <p class="text-2xl md:text-3xl font-extrabold text-blue-400" id="stat-circ-supply">Loading...</p>
-                <p class="text-xs text-slate-500 mt-1">Total supply excluding AMM Vault & Burns</p>
+                <p class="text-[10px] md:text-xs uppercase tracking-wider text-slate-400 mb-1">Current Max Supply</p>
+                <p class="text-xl md:text-3xl font-extrabold text-white" id="stat-max-supply">Loading...</p>
+                <p class="text-[10px] md:text-xs text-slate-500 mt-1">Genesis 4,444 minus burnt</p>
             </div>
             <div class="bg-[#0f172a] border border-[#334155] rounded-xl p-5 shadow-inner">
-                <p class="text-xs uppercase tracking-wider text-slate-400 mb-1">AMM Vault Inventory</p>
-                <p class="text-2xl md:text-3xl font-extrabold text-slate-300" id="stat-amm-vault">Loading...</p>
-                <p class="text-xs text-slate-500 mt-1">Liquidity held in the Anvil AMM Pool</p>
+                <p class="text-[10px] md:text-xs uppercase tracking-wider text-slate-400 mb-1">Permanently Burnt</p>
+                <p class="text-xl md:text-3xl font-extrabold text-orange-400" id="stat-burnt-nfts">Loading...</p>
+                <p class="text-[10px] md:text-xs text-slate-500 mt-1">Equivalent locked/removed</p>
             </div>
             <div class="bg-[#0f172a] border border-[#334155] rounded-xl p-5 shadow-inner">
-                <p class="text-xs uppercase tracking-wider text-slate-400 mb-1">Permanently Burnt</p>
-                <p class="text-2xl md:text-3xl font-extrabold text-orange-400" id="stat-burnt-nfts">Loading...</p>
-                <p class="text-xs text-slate-500 mt-1">Sent to the dead address</p>
+                <p class="text-[10px] md:text-xs uppercase tracking-wider text-slate-400 mb-1">AMM Vault Inventory</p>
+                <p class="text-xl md:text-3xl font-extrabold text-slate-300" id="stat-amm-vault">Loading...</p>
+                <p class="text-[10px] md:text-xs text-slate-500 mt-1">Liquidity held in Anvil Pool</p>
+            </div>
+            <div class="bg-[#0f172a] border border-[#334155] rounded-xl p-5 shadow-inner border-b-4 border-b-blue-500">
+                <p class="text-[10px] md:text-xs uppercase tracking-wider text-slate-400 mb-1">True Circulating NFTs</p>
+                <p class="text-xl md:text-3xl font-extrabold text-blue-400" id="stat-circ-supply">Loading...</p>
+                <p class="text-[10px] md:text-xs text-slate-500 mt-1">Supply outside of the AMM</p>
             </div>
         </div>
 
@@ -248,8 +249,9 @@
                 <p class="text-2xl md:text-3xl font-extrabold text-purple-400" id="stat-nft-holders">Loading...</p>
                 <p class="text-xs text-slate-500 mt-1">Wallets holding at least 1 StonkBroker</p>
             </div>
-            <div class="bg-[#1e293b] border border-[#334155] rounded-xl p-5 shadow-sm ring-1 ring-emerald-500/20">
-                <p class="text-xs uppercase tracking-wider text-slate-400 mb-1">Ownership Concentration</p>
+            <!-- UPDATED: Replaced % with Absolute Unique Owners Format -->
+            <div class="bg-[#1e293b] border border-[#334155] rounded-xl p-5 shadow-sm ring-1 ring-emerald-500/20 flex flex-col items-center justify-center text-center">
+                <p class="text-xs uppercase tracking-wider text-slate-400 mb-1">Unique Owners</p>
                 <p class="text-2xl md:text-3xl font-extrabold text-emerald-400" id="stat-own-ratio">Loading...</p>
                 <p class="text-xs text-slate-500 mt-1">Unique humans / True Circulating Supply</p>
             </div>
@@ -257,6 +259,14 @@
                 <p class="text-xs uppercase tracking-wider text-slate-400 mb-1">Unique $STONK Holders</p>
                 <p class="text-2xl md:text-3xl font-extrabold text-purple-400" id="stat-stonk-holders">Loading...</p>
                 <p class="text-xs text-slate-500 mt-1">Active addresses with a token balance</p>
+            </div>
+        </div>
+
+        <!-- NEW PHASE 3: Honest Holder Chart -->
+        <div class="bg-[#0f172a] border border-[#334155] rounded-xl p-4 md:p-6 mb-6">
+            <h3 class="text-sm font-bold text-white mb-4">True Active Token Holders Over Time</h3>
+            <div class="relative h-72 md:h-80 w-full">
+                <canvas id="ownershipChart"></canvas>
             </div>
         </div>
     </main>
@@ -282,6 +292,7 @@
         let burnChartInstance = null;
         let activationChartInstance = null;
         let tierPieChartInstance = null;
+        let ownershipChartInstance = null;
         let tierChartInstances = {};
 
         window.fullBurnLabels = [];
@@ -318,6 +329,7 @@
             } else if (tab === 'ownership') {
                 btnOwnership.className = "flex-1 sm:flex-none justify-center bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition shadow-lg shadow-blue-500/25";
                 viewOwnership.classList.remove('hidden');
+                if (window.ownershipChartData) renderOwnershipChart(window.ownershipChartData);
             }
         }
 
@@ -477,12 +489,15 @@
             document.getElementById('stat-active-count').innerText = formatNumber(activeCount) + " Units";
 
             // Phase 3 Data Binding
+            document.getElementById('stat-max-supply').innerText = formatNumber(own.currentMaxSupply || 0, 2) + ' Brokers';
             document.getElementById('stat-circ-supply').innerText = formatNumber(own.circulatingNftSupply || 0) + ' Brokers';
             document.getElementById('stat-amm-vault').innerText = formatNumber(own.ammVaultNfts || 0) + ' Brokers';
-            document.getElementById('stat-burnt-nfts').innerText = formatNumber(own.burntNfts || 0) + ' Brokers';
+            document.getElementById('stat-burnt-nfts').innerText = formatNumber(own.burntNfts || 0, 2) + ' Brokers';
             document.getElementById('stat-nft-holders').innerText = formatNumber(own.nftHolders || 0) + ' Wallets';
             document.getElementById('stat-stonk-holders').innerText = formatNumber(own.stonkHolders || 0) + ' Wallets';
-            document.getElementById('stat-own-ratio').innerText = (own.ownershipRatio || 0).toFixed(2) + '%';
+            
+            // UPDATED: Displays formatted text string instead of percentage
+            document.getElementById('stat-own-ratio').innerText = formatNumber(own.nftHolders || 0) + ' / ' + formatNumber(own.circulatingNftSupply || 0);
 
             const stats = act.stats || { '24h': {}, '7d': {}, '30d': {}, 'allTime': {} };
             document.getElementById('stat-act-24h').innerText = formatNumber(stats['24h'].activated || 0);
@@ -506,6 +521,10 @@
                 breakdownObj: breakdown,
                 breakdownArr: [breakdown.T0 || 0, breakdown.T1 || 0, breakdown.T2 || 0, breakdown.T3 || 0, breakdown.T4 || 0]
             };
+
+            if (own.historicalGrowth) {
+                window.ownershipChartData = own.historicalGrowth;
+            }
         }
 
         function updateBurnChart(timeframe) {
@@ -651,6 +670,38 @@
                     maintainAspectRatio: false,
                     cutout: '65%',
                     plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        // NEW PHASE 3: Honest Token Holder Chart rendering
+        function renderOwnershipChart({ labels, data }) {
+            const ctx = document.getElementById('ownershipChart').getContext('2d');
+            if (ownershipChartInstance) ownershipChartInstance.destroy();
+
+            ownershipChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Active $STONK Holders',
+                        data: data,
+                        borderColor: '#a855f7',
+                        backgroundColor: 'rgba(168, 85, 247, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        stepped: true, // Gives that classic staircase growth look!
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: '#334155', borderDash: [4, 4] }, ticks: { color: '#94a3b8' } },
+                        y: { grid: { color: '#334155', borderDash: [4, 4] }, ticks: { color: '#94a3b8' } }
+                    }
                 }
             });
         }
