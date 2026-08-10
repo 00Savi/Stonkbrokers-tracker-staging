@@ -162,33 +162,66 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <!-- NEW Phase 4: Tier-Specific Flow Boxes with Toggle -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-4 gap-4 mt-8">
+            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider">Tier Activation Flow</h3>
+            <div class="flex bg-[#1e293b] rounded-lg p-1 border border-[#334155] w-full sm:w-auto">
+                <button onclick="updateTierStats('24h')" id="btn-tier-24h" class="flex-1 sm:flex-none px-4 py-1.5 text-xs font-bold rounded-md text-slate-400 hover:text-white transition">D</button>
+                <button onclick="updateTierStats('7d')" id="btn-tier-7d" class="flex-1 sm:flex-none px-4 py-1.5 text-xs font-bold rounded-md text-slate-400 hover:text-white transition">W</button>
+                <button onclick="updateTierStats('30d')" id="btn-tier-30d" class="flex-1 sm:flex-none px-4 py-1.5 text-xs font-bold rounded-md text-slate-400 hover:text-white transition">M</button>
+                <button onclick="updateTierStats('allTime')" id="btn-tier-allTime" class="flex-1 sm:flex-none px-4 py-1.5 text-xs font-bold rounded-md bg-[#334155] text-white transition shadow-sm">ALL</button>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-8">
             <div class="bg-[#1e293b] border border-[#334155] rounded-xl p-4 shadow-sm">
-                <p class="text-[10px] uppercase tracking-wider text-slate-400 mb-2">Last 24 Hours</p>
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="w-2.5 h-2.5 rounded-sm bg-[#60a5fa]"></div>
+                    <p class="text-[10px] uppercase tracking-wider text-slate-300 font-bold truncate">T0: Floor Trader</p>
+                </div>
                 <div class="flex justify-between items-end">
-                    <div><p class="text-lg font-bold text-emerald-400" id="stat-act-24h">0</p><p class="text-[10px] text-slate-500">Activations</p></div>
-                    <div class="text-right"><p class="text-lg font-bold text-rose-400" id="stat-deact-24h">0</p><p class="text-[10px] text-slate-500">Deactivations</p></div>
+                    <div><p class="text-lg font-bold text-emerald-400" id="t0-act">0</p><p class="text-[9px] text-slate-500 uppercase">Act</p></div>
+                    <div class="text-right"><p class="text-lg font-bold text-rose-400" id="t0-deact">0</p><p class="text-[9px] text-slate-500 uppercase">Deact</p></div>
                 </div>
             </div>
             <div class="bg-[#1e293b] border border-[#334155] rounded-xl p-4 shadow-sm">
-                <p class="text-[10px] uppercase tracking-wider text-slate-400 mb-2">Last 7 Days</p>
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="w-2.5 h-2.5 rounded-sm bg-[#34d399]"></div>
+                    <p class="text-[10px] uppercase tracking-wider text-slate-300 font-bold truncate">T1: Analyst</p>
+                </div>
                 <div class="flex justify-between items-end">
-                    <div><p class="text-lg font-bold text-emerald-400" id="stat-act-7d">0</p><p class="text-[10px] text-slate-500">Activations</p></div>
-                    <div class="text-right"><p class="text-lg font-bold text-rose-400" id="stat-deact-7d">0</p><p class="text-[10px] text-slate-500">Deactivations</p></div>
+                    <div><p class="text-lg font-bold text-emerald-400" id="t1-act">0</p><p class="text-[9px] text-slate-500 uppercase">Act</p></div>
+                    <div class="text-right"><p class="text-lg font-bold text-rose-400" id="t1-deact">0</p><p class="text-[9px] text-slate-500 uppercase">Deact</p></div>
                 </div>
             </div>
             <div class="bg-[#1e293b] border border-[#334155] rounded-xl p-4 shadow-sm">
-                <p class="text-[10px] uppercase tracking-wider text-slate-400 mb-2">Last 30 Days</p>
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="w-2.5 h-2.5 rounded-sm bg-[#f472b6]"></div>
+                    <p class="text-[10px] uppercase tracking-wider text-slate-300 font-bold truncate">T2: Portfolio Mgr</p>
+                </div>
                 <div class="flex justify-between items-end">
-                    <div><p class="text-lg font-bold text-emerald-400" id="stat-act-30d">0</p><p class="text-[10px] text-slate-500">Activations</p></div>
-                    <div class="text-right"><p class="text-lg font-bold text-rose-400" id="stat-deact-30d">0</p><p class="text-[10px] text-slate-500">Deactivations</p></div>
+                    <div><p class="text-lg font-bold text-emerald-400" id="t2-act">0</p><p class="text-[9px] text-slate-500 uppercase">Act</p></div>
+                    <div class="text-right"><p class="text-lg font-bold text-rose-400" id="t2-deact">0</p><p class="text-[9px] text-slate-500 uppercase">Deact</p></div>
                 </div>
             </div>
             <div class="bg-[#1e293b] border border-[#334155] rounded-xl p-4 shadow-sm">
-                <p class="text-[10px] uppercase tracking-wider text-slate-400 mb-2">All Time</p>
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="w-2.5 h-2.5 rounded-sm bg-[#fbbf24]"></div>
+                    <p class="text-[10px] uppercase tracking-wider text-slate-300 font-bold truncate">T3: Managing Dir</p>
+                </div>
                 <div class="flex justify-between items-end">
-                    <div><p class="text-lg font-bold text-emerald-400" id="stat-act-all">0</p><p class="text-[10px] text-slate-500">Activations</p></div>
-                    <div class="text-right"><p class="text-lg font-bold text-rose-400" id="stat-deact-all">0</p><p class="text-[10px] text-slate-500">Deactivations</p></div>
+                    <div><p class="text-lg font-bold text-emerald-400" id="t3-act">0</p><p class="text-[9px] text-slate-500 uppercase">Act</p></div>
+                    <div class="text-right"><p class="text-lg font-bold text-rose-400" id="t3-deact">0</p><p class="text-[9px] text-slate-500 uppercase">Deact</p></div>
+                </div>
+            </div>
+            <div class="bg-[#1e293b] border border-[#334155] rounded-xl p-4 shadow-sm">
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="w-2.5 h-2.5 rounded-sm bg-[#a78bfa]"></div>
+                    <p class="text-[10px] uppercase tracking-wider text-slate-300 font-bold truncate">T4: Partner</p>
+                </div>
+                <div class="flex justify-between items-end">
+                    <div><p class="text-lg font-bold text-emerald-400" id="t4-act">0</p><p class="text-[9px] text-slate-500 uppercase">Act</p></div>
+                    <div class="text-right"><p class="text-lg font-bold text-rose-400" id="t4-deact">0</p><p class="text-[9px] text-slate-500 uppercase">Deact</p></div>
                 </div>
             </div>
         </div>
@@ -211,7 +244,7 @@
         </div>
     </main>
 
-    <!-- NEW PHASE 3: Ownership Stats -->
+    <!-- View 4: Ownership Stats -->
     <main id="view-ownership" class="max-w-6xl mx-auto card rounded-2xl border p-4 md:p-6 mb-8 shadow-xl hidden">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div>
@@ -239,7 +272,6 @@
                 <p class="text-xl md:text-3xl font-extrabold text-slate-300" id="stat-amm-vault">Loading...</p>
                 <p class="text-[10px] md:text-xs text-slate-500 mt-1">Liquidity held in Anvil Pool</p>
             </div>
-            <!-- FIX: Removed "minus burns" from description because we fixed the double-deduction math -->
             <div class="bg-[#0f172a] border border-[#334155] rounded-xl p-5 shadow-inner border-b-4 border-b-blue-500">
                 <p class="text-[10px] md:text-xs uppercase tracking-wider text-slate-400 mb-1">True Circulating NFTs</p>
                 <p class="text-xl md:text-3xl font-extrabold text-blue-400" id="stat-circ-supply">Loading...</p>
@@ -253,7 +285,6 @@
                 <p class="text-2xl md:text-3xl font-extrabold text-purple-400" id="stat-nft-holders">Loading...</p>
                 <p class="text-xs text-slate-500 mt-1">Wallets holding at least 1 StonkBroker</p>
             </div>
-            <!-- FIX: Left-aligned and re-added the percentage calculation display -->
             <div class="bg-[#1e293b] border border-[#334155] rounded-xl p-5 shadow-sm ring-1 ring-emerald-500/20">
                 <p class="text-xs uppercase tracking-wider text-slate-400 mb-1">Ownership Concentration</p>
                 <p class="text-2xl md:text-3xl font-extrabold text-emerald-400" id="stat-own-ratio">Loading...</p>
@@ -274,14 +305,36 @@
         </div>
     </main>
 
+    <!-- Dynamic Contextual Methodology Section -->
     <div class="max-w-6xl mx-auto card rounded-xl p-5 md:p-6 border mb-12 shadow-lg">
         <div class="flex items-center gap-2 mb-4">
             <svg class="w-5 h-5 text-blue-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
             <h3 class="text-base md:text-lg font-bold text-white">Methodology & Disclaimer</h3>
         </div>
-        <p class="text-xs md:text-sm text-slate-300 mb-5 leading-relaxed">
-            <strong class="text-white">Methodology:</strong> Cash-on-Cash (CoC) return metrics are calculated using a Dual-Capture Oracle Model to ensure absolute on-chain accuracy. The tracker samples the trailing 7-day realized Native ETH and tracked ERC-20 token distributions sent to a representative, fully active Partner (T4) wallet. This baseline calculates the exact yield per weight unit, which is then mathematically extrapolated across the live active network weight. This global yield is annualized and evaluated against the current AMM floor purchase costs plus tier activation requirements.
-        </p>
+        
+        <div class="text-xs md:text-sm text-slate-300 mb-5 leading-relaxed space-y-4">
+            <!-- ROI Tab Methodology -->
+            <p id="meth-roi" class="meth-section">
+                <strong class="text-white">Yield & ROI (Dual-Capture Oracle):</strong> Cash-on-Cash (CoC) returns are calculated by sampling the trailing 7-day realized Native ETH and tracked ERC-20 token distributions sent to a representative, fully active Partner (T4) wallet. This baseline calculates the exact yield per weight unit, which is mathematically extrapolated across the live network weight, annualized, and evaluated against current AMM floor purchase costs plus tier activation requirements.
+            </p>
+
+            <!-- Burn Tracker Tab Methodology -->
+            <p id="meth-burn" class="meth-section hidden">
+                <strong class="text-white">Token Burn Tracking:</strong> The total burnt token count is calculated by directly indexing the balances of the network's standard dead addresses (0x000... and 0xdead), combined with the STONK tokens permanently locked inside the protocol's Activation Manager smart contract. The equivalent broker metric divides this total by the standard 666,666 token tier requirement.
+            </p>
+
+            <!-- Activation Tab Methodology -->
+            <p id="meth-activation" class="meth-section hidden">
+                <strong class="text-white">Ecosystem Activation Metrics:</strong> Live network activation metrics are derived by parsing the entire historical event log of the protocol's Activation Manager smart contract. The script actively tallies 'Activated' and 'ActivationCleared' on-chain events to mathematically map the live network weight, chronological tier flow, and tier composition.
+            </p>
+
+            <!-- Ownership Tab Methodology -->
+            <p id="meth-ownership" class="meth-section hidden">
+                <strong class="text-white">True Circulating Supply:</strong> Calculated as the Genesis Supply (4,444) minus the live inventory currently held within the Anvil AMM Pool. Burnt/locked tokens are physically trapped inside the AMM Vault, meaning they are inherently excluded from the circulating supply.<br><br>
+                <strong class="text-white">Holder Metrics & Anti-Dust Filter:</strong> Unique token holders are calculated by directly indexing the blockchain ledger and applying a strict "Anti-Dust" filter. Any wallet holding less than 1 full token is discarded to eliminate MEV bots, DEX routers, and abandoned fractional dust. Furthermore, protocol system wallets (the AMM Vault and burn addresses) are explicitly removed from all holder counts to provide a mathematically honest representation of unique human ownership.
+            </p>
+        </div>
+        
         <p class="text-xs md:text-sm text-slate-400 italic leading-relaxed border-t border-[#334155] pt-5">
             <strong class="text-slate-300 not-italic">Disclaimer:</strong> Tracked yield values are calculated using Mark-to-Market spot pricing at the exact time of the dashboard's last automated sync, rather than the historical price at the time of the drop. Yields fluctuate based on network activation weight, market token prices, and community protocol volume. This is a community-built tracking tool and does not guarantee future returns.
         </p>
@@ -301,6 +354,7 @@
         window.fullBurnLabels = [];
         window.fullBurnData = [];
         window.tierChartData = {};
+        window.tierActivationStats = null;
 
         function switchTab(tab) {
             const btnRoi = document.getElementById('tab-roi');
@@ -313,25 +367,36 @@
             const viewActivation = document.getElementById('view-activation');
             const viewOwnership = document.getElementById('view-ownership');
 
+            const methRoi = document.getElementById('meth-roi');
+            const methBurn = document.getElementById('meth-burn');
+            const methActivation = document.getElementById('meth-activation');
+            const methOwnership = document.getElementById('meth-ownership');
+
             [btnRoi, btnBurn, btnActivation, btnOwnership].forEach(b => {
                 b.className = "flex-1 sm:flex-none justify-center bg-transparent border border-[#334155] hover:bg-[#1e293b] text-slate-300 px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition";
             });
+            
             [viewRoi, viewBurn, viewActivation, viewOwnership].forEach(v => v.classList.add('hidden'));
+            [methRoi, methBurn, methActivation, methOwnership].forEach(m => m.classList.add('hidden'));
 
             if (tab === 'roi') {
                 btnRoi.className = "flex-1 sm:flex-none justify-center bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition shadow-lg shadow-blue-500/25";
                 viewRoi.classList.remove('hidden');
+                methRoi.classList.remove('hidden');
             } else if (tab === 'burn') {
                 btnBurn.className = "flex-1 sm:flex-none justify-center bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition shadow-lg shadow-blue-500/25";
                 viewBurn.classList.remove('hidden');
+                methBurn.classList.remove('hidden');
                 if (window.fullBurnData.length) updateBurnChart('all');
             } else if (tab === 'activation') {
                 btnActivation.className = "flex-1 sm:flex-none justify-center bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition shadow-lg shadow-blue-500/25";
                 viewActivation.classList.remove('hidden');
+                methActivation.classList.remove('hidden');
                 if (window.activationChartData) renderActivationCharts(window.activationChartData);
             } else if (tab === 'ownership') {
                 btnOwnership.className = "flex-1 sm:flex-none justify-center bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition shadow-lg shadow-blue-500/25";
                 viewOwnership.classList.remove('hidden');
+                methOwnership.classList.remove('hidden');
                 if (window.ownershipChartData) renderOwnershipChart(window.ownershipChartData);
             }
         }
@@ -470,6 +535,25 @@
             }
         }
 
+        function updateTierStats(timeframe) {
+            ['24h', '7d', '30d', 'allTime'].forEach(tf => {
+                const btn = document.getElementById(`btn-tier-${tf}`);
+                if (tf === timeframe) {
+                    btn.className = "flex-1 sm:flex-none px-4 py-1.5 text-xs font-bold rounded-md bg-[#334155] text-white transition shadow-sm";
+                } else {
+                    btn.className = "flex-1 sm:flex-none px-4 py-1.5 text-xs font-bold rounded-md text-slate-400 hover:text-white transition";
+                }
+            });
+
+            const stats = window.tierActivationStats;
+            if(!stats) return;
+
+            ['T0', 'T1', 'T2', 'T3', 'T4'].forEach(tier => {
+                document.getElementById(`${tier.toLowerCase()}-act`).innerText = formatNumber(stats[tier][timeframe].act || 0);
+                document.getElementById(`${tier.toLowerCase()}-deact`).innerText = formatNumber(stats[tier][timeframe].deact || 0);
+            });
+        }
+
         function processMetricsData(data) {
             const act = data.activation || {};
             const own = data.ownership || {};
@@ -498,18 +582,13 @@
             document.getElementById('stat-nft-holders').innerText = formatNumber(own.nftHolders || 0) + ' Wallets';
             document.getElementById('stat-stonk-holders').innerText = formatNumber(own.stonkHolders || 0) + ' Wallets';
             
-            // FIX: Reverted to properly display the honest percentage calculation
             document.getElementById('stat-own-ratio').innerText = (own.ownershipRatio || 0).toFixed(2) + '%';
 
-            const stats = act.stats || { '24h': {}, '7d': {}, '30d': {}, 'allTime': {} };
-            document.getElementById('stat-act-24h').innerText = formatNumber(stats['24h'].activated || 0);
-            document.getElementById('stat-deact-24h').innerText = formatNumber(stats['24h'].deactivated || 0);
-            document.getElementById('stat-act-7d').innerText = formatNumber(stats['7d'].activated || 0);
-            document.getElementById('stat-deact-7d').innerText = formatNumber(stats['7d'].deactivated || 0);
-            document.getElementById('stat-act-30d').innerText = formatNumber(stats['30d'].activated || 0);
-            document.getElementById('stat-deact-30d').innerText = formatNumber(stats['30d'].deactivated || 0);
-            document.getElementById('stat-act-all').innerText = formatNumber(stats['allTime'].activated || 0);
-            document.getElementById('stat-deact-all').innerText = formatNumber(stats['allTime'].deactivated || 0);
+            // New Tier Flow Stats logic
+            if(act.tierStats) {
+                window.tierActivationStats = act.tierStats;
+                updateTierStats('allTime'); // Set default toggle load state
+            }
 
             const maxActive = history.cumulative[history.cumulative.length - 1] || 1;
             window.fullBurnLabels = history.labels;
