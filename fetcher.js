@@ -76,7 +76,7 @@ const tierStructure = [
 async function secureFetch(url) {
   for (let i = 0; i < 4; i++) {
     try {
-      const res = await fetch(url, { headers: { "Accept": "application/json", "User-Agent": "StonkBrokersTracker/6.0" } });
+      const res = await fetch(url, { headers: { "Accept": "application/json", "User-Agent": "StonkBrokersTracker/7.0" } });
       if (res.status === 429) throw new Error("rate");
       return await res.json();
     } catch (e) {
@@ -136,7 +136,7 @@ async function loadPrices() {
 }
 
 async function fetchAllLogs(address) {
-  console.log(`Fetching ALL historical logs for ${address} via dynamic block chunking...`);
+  console.log(`Fetching ALL historical logs for ${address}...`);
   let latestBlock = 35000000;
   try {
     const br = await secureFetch(`${PRO_API}?chain_id=${CHAIN_ID}&module=block&action=eth_block_number&apikey=${API_KEY}`);
@@ -284,7 +284,6 @@ async function fetchActivations() {
     'allTime': { activated: 0, deactivated: 0 }
   };
 
-  // Find highest block to dynamically calculate missing timestamps accurately
   let highestBlock = 0;
   for (const log of mergedLogs) {
       const bNum = log.blockNumber.toString().startsWith("0x") ? parseInt(log.blockNumber, 16) : parseInt(log.blockNumber, 10);
@@ -295,15 +294,10 @@ async function fetchActivations() {
 
   for (const log of mergedLogs) {
     const bNum = log.blockNumber.toString().startsWith("0x") ? parseInt(log.blockNumber, 16) : parseInt(log.blockNumber, 10);
-    
     let ts = log.timeStamp || log.timestamp;
     ts = ts ? (ts.toString().startsWith("0x") ? parseInt(ts, 16) : parseInt(ts, 10)) : 0;
     
-    // Fallback block-time estimation for raw EVM logs that lack timestamps
-    if (ts === 0) {
-        ts = Math.floor(now - ((highestBlock - bNum) * 2)); 
-    }
-    
+    if (ts === 0) ts = Math.floor(now - ((highestBlock - bNum) * 2)); 
     if (ts > 0 && ts < minTs) minTs = ts;
     const age = now - ts;
 
@@ -365,7 +359,6 @@ async function fetchActivations() {
     } catch (e) {}
   }
 
-  // Safety constraint: Don't render empty days from 50 years ago if time math bugs out
   if (minTs < now - (60 * 86400)) minTs = now - (60 * 86400);
 
   const startOfDay = new Date(minTs * 1000);
@@ -424,13 +417,24 @@ async function fetchActivations() {
   };
 }
 
+// NEW PHASE 2: Bucket yield data into 7 daily arrays
 async function getGlobalYield(sevenDaysAgo, activationStats) {
-  console.log("Fetching Yield via Dual-Capture Oracle...");
+  console.log("Fetching Yield via Dual-Capture Oracle (Phase 2 Daily Bucketing)...");
   const SAMPLE_WALLET = "0xe7207caa913b54aa4411e847a3a49eee0568cccf".toLowerCase();
   const SAMPLE_WEIGHT = 333; 
-  let sampleEthInflow = 0;
-  let sampleErc20Usd = 0;
+  
+  const oneDay = 86400;
+  const dailyEth = [0, 0, 0, 0, 0, 0, 0];
+  const dailyErc20 = [0, 0, 0, 0, 0, 0, 0];
+  const dailyDates = [];
 
+  // Generate strict 7-day date labels
+  for (let i = 0; i < 7; i++) {
+    const d = new Date((sevenDaysAgo + (i * oneDay)) * 1000);
+    dailyDates.push(`${d.getMonth() + 1}/${d.getDate()}`);
+  }
+
+  console.log("1. Tracking Native ETH Daily Inflows...");
   let pageEth = 1;
   while(true) {
       let urlEth = `${PRO_API}?chain_id=${CHAIN_ID}&module=account&action=txlistinternal&address=${SAMPLE_WALLET}&page=${pageEth}&offset=1000&sort=desc&apikey=${API_KEY}`;
@@ -447,12 +451,16 @@ async function getGlobalYield(sevenDaysAgo, activationStats) {
         const ts = parseInt(tx.timeStamp || tx.timestamp || tx.UnixTimestamp || 0, 10);
         if (ts < sevenDaysAgo) { reachedOlder = true; continue; }
         if (tx.isError === "1" || tx.isError === 1) continue;
+        
         const fromAddr = (tx.from || tx.fromAddress || tx.contractAddress || "").toLowerCase();
         const toAddr = (tx.to || tx.toAddress || "").toLowerCase();
         
         if (PROTOCOL_CONTRACTS.includes(fromAddr) && toAddr === SAMPLE_WALLET) {
           const eth = Number(tx.value || tx.Value || 0) / 1e18;
-          if (eth > 0) sampleEthInflow += eth;
+          if (eth > 0) {
+              const dayIdx = Math.max(0, Math.min(6, Math.floor((ts - sevenDaysAgo) / oneDay)));
+              dailyEth[dayIdx] += eth;
+          }
         }
       }
       if(reachedOlder || txs.length < 1000) break;
@@ -460,6 +468,7 @@ async function getGlobalYield(sevenDaysAgo, activationStats) {
       await sleep(300);
   }
 
+  console.log("2. Tracking Tracked ERC-20 Daily Inflows...");
   for (const tokenAddr of Object.keys(TOKEN_TICKERS)) {
     const price = prices[tokenAddr] || 0;
     if (price <= 0) continue;
@@ -483,7 +492,11 @@ async function getGlobalYield(sevenDaysAgo, activationStats) {
             const decRaw = tx.tokenDecimal || tx.decimals || 18;
             const decimals = parseInt(decRaw, 10);
             const amount = Number(tx.value || tx.Value || 0) / Math.pow(10, decimals);
-            if (amount > 0) sampleErc20Usd += (amount * price);
+            if (amount > 0) {
+                const usdVal = amount * price;
+                const dayIdx = Math.max(0, Math.min(6, Math.floor((ts - sevenDaysAgo) / oneDay)));
+                dailyErc20[dayIdx] += usdVal;
+            }
           }
         }
         if(reachedOlder || txs.length < 1000) break;
@@ -492,8 +505,14 @@ async function getGlobalYield(sevenDaysAgo, activationStats) {
     }
   }
 
-  const sampleEthUsd = sampleEthInflow * market.ethPriceUsd;
-  const totalSampleUsd = sampleEthUsd + sampleErc20Usd;
+  let totalSampleUsd = 0;
+  const dailyUsdPerWeight = [0, 0, 0, 0, 0, 0, 0];
+
+  for (let i = 0; i < 7; i++) {
+    const dayUsd = (dailyEth[i] * market.ethPriceUsd) + dailyErc20[i];
+    totalSampleUsd += dayUsd;
+    dailyUsdPerWeight[i] = dayUsd / SAMPLE_WEIGHT;
+  }
   
   let totalNetworkWeight = 0;
   for (const t of tierStructure) {
@@ -502,7 +521,13 @@ async function getGlobalYield(sevenDaysAgo, activationStats) {
   }
   
   const usdPerWeightUnit = totalSampleUsd / SAMPLE_WEIGHT;
-  return usdPerWeightUnit * totalNetworkWeight;
+  const global7DayUsd = usdPerWeightUnit * totalNetworkWeight;
+  
+  return {
+    global7DayUsd,
+    dailyDates,
+    dailyUsdPerWeight
+  };
 }
 
 async function run() {
@@ -510,8 +535,8 @@ async function run() {
   await loadPrices();
   const sevenDaysAgo = Math.floor(Date.now() / 1000) - 7 * 24 * 3600;
   const activationStats = await fetchActivations();
-  const global7DayYield = await getGlobalYield(sevenDaysAgo, activationStats);
-  const globalAnnualYield = global7DayYield * 52.14;
+  const yieldData = await getGlobalYield(sevenDaysAgo, activationStats);
+  const globalAnnualYield = yieldData.global7DayUsd * 52.14;
 
   let totalNetworkWeight = 0;
   for (const t of tierStructure) {
@@ -523,13 +548,17 @@ async function run() {
   const results = [];
   for (const t of tierStructure) {
     const tierExpectedAnnualUsd = t.weight * yieldPerWeightUnitAnnual;
+    const tierDailyUsd = yieldData.dailyUsdPerWeight.map(val => val * t.weight);
+
     results.push({
       tier: t.id,
       name: t.name,
       reqTokens: t.reqTokens,
       multiplier: `${(t.weight/100).toFixed(2)}x`, 
       weight: t.weight,
-      trackedAnnualYieldUsd: tierExpectedAnnualUsd
+      trackedAnnualYieldUsd: tierExpectedAnnualUsd,
+      dailyDates: yieldData.dailyDates,
+      dailyYields: tierDailyUsd
     });
   }
 
@@ -541,7 +570,7 @@ async function run() {
   };
 
   fs.writeFileSync("data.json", JSON.stringify(out, null, 2));
-  console.log("\n✓ Dashboard Phase 1 payload generated successfully.");
+  console.log("\n✓ Dashboard Phase 2 payload generated successfully.");
 }
 
 run().catch(err => {
