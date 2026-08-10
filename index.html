@@ -162,6 +162,7 @@
             </div>
         </div>
 
+        <!-- NEW Phase 4: Tier-Specific Flow Boxes with Toggle -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-4 gap-4 mt-8">
             <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider">Tier Activation Flow</h3>
             <div class="flex bg-[#1e293b] rounded-lg p-1 border border-[#334155] w-full sm:w-auto">
@@ -312,18 +313,22 @@
         </div>
         
         <div class="text-xs md:text-sm text-slate-300 mb-5 leading-relaxed space-y-4">
+            <!-- ROI Tab Methodology -->
             <p id="meth-roi" class="meth-section">
                 <strong class="text-white">Yield & ROI (Dual-Capture Oracle):</strong> Cash-on-Cash (CoC) returns are calculated by sampling the trailing 7-day realized Native ETH and tracked ERC-20 token distributions sent to a representative, fully active Partner (T4) wallet. This baseline calculates the exact yield per weight unit, which is mathematically extrapolated across the live network weight, annualized, and evaluated against current AMM floor purchase costs plus tier activation requirements.
             </p>
 
+            <!-- Burn Tracker Tab Methodology -->
             <p id="meth-burn" class="meth-section hidden">
                 <strong class="text-white">Token Burn Tracking:</strong> The total burnt token count is calculated by directly indexing the balances of the network's standard dead addresses (0x000... and 0xdead), combined with the STONK tokens permanently locked inside the protocol's Activation Manager smart contract. The equivalent broker metric divides this total by the standard 666,666 token tier requirement.
             </p>
 
+            <!-- Activation Tab Methodology -->
             <p id="meth-activation" class="meth-section hidden">
                 <strong class="text-white">Ecosystem Activation Metrics:</strong> Live network activation metrics are derived by parsing the entire historical event log of the protocol's Activation Manager smart contract. The script actively tallies 'Activated' and 'ActivationCleared' on-chain events to mathematically map the live network weight, chronological tier flow, and tier composition.
             </p>
 
+            <!-- Ownership Tab Methodology -->
             <p id="meth-ownership" class="meth-section hidden">
                 <strong class="text-white">True Circulating Supply:</strong> Calculated as the Genesis Supply (4,444) minus the live inventory currently held within the Anvil AMM Pool. Burnt/locked tokens are physically trapped inside the AMM Vault, meaning they are inherently excluded from the circulating supply.<br><br>
                 <strong class="text-white">Holder Metrics & Anti-Dust Filter:</strong> Unique token holders are calculated by directly indexing the blockchain ledger and applying a strict "Anti-Dust" filter. Any wallet holding less than 1 full token is discarded to eliminate MEV bots, DEX routers, and abandoned fractional dust. Furthermore, protocol system wallets (the AMM Vault and burn addresses) are explicitly removed from all holder counts to provide a mathematically honest representation of unique human ownership.
@@ -579,9 +584,10 @@
             
             document.getElementById('stat-own-ratio').innerText = (own.ownershipRatio || 0).toFixed(2) + '%';
 
+            // New Tier Flow Stats logic
             if(act.tierStats) {
                 window.tierActivationStats = act.tierStats;
-                updateTierStats('allTime'); 
+                updateTierStats('allTime'); // Set default toggle load state
             }
 
             const maxActive = history.cumulative[history.cumulative.length - 1] || 1;
