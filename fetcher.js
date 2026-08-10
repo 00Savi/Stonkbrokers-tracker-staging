@@ -223,7 +223,6 @@ async function getBurnEvents() {
 }
 
 async function getTrueDeflationStats() {
-  console.log("Calculating True Deflation via Initial Max Supply Deductions...");
   let currentSupply = MAX_STONK_SUPPLY;
   let deadBalance = 0;
   let lockedBalance = 0;
@@ -285,28 +284,42 @@ async function fetchActivations() {
     'allTime': { activated: 0, deactivated: 0 }
   };
 
-  // 1. Process all events natively by timestamp to build exact active ledger & daily metrics
+  // Find highest block to dynamically calculate missing timestamps accurately
+  let highestBlock = 0;
   for (const log of mergedLogs) {
-    const tsRaw = log.timeStamp || log.timestamp;
-    const ts = tsRaw ? (tsRaw.toString().startsWith("0x") ? parseInt(tsRaw, 16) : parseInt(tsRaw, 10)) : 0;
+      const bNum = log.blockNumber.toString().startsWith("0x") ? parseInt(log.blockNumber, 16) : parseInt(log.blockNumber, 10);
+      if (bNum > highestBlock) highestBlock = bNum;
+  }
+
+  let minTs = now;
+
+  for (const log of mergedLogs) {
+    const bNum = log.blockNumber.toString().startsWith("0x") ? parseInt(log.blockNumber, 16) : parseInt(log.blockNumber, 10);
+    
+    let ts = log.timeStamp || log.timestamp;
+    ts = ts ? (ts.toString().startsWith("0x") ? parseInt(ts, 16) : parseInt(ts, 10)) : 0;
+    
+    // Fallback block-time estimation for raw EVM logs that lack timestamps
+    if (ts === 0) {
+        ts = Math.floor(now - ((highestBlock - bNum) * 2)); 
+    }
+    
+    if (ts > 0 && ts < minTs) minTs = ts;
     const age = now - ts;
 
     if (log.isBurn) {
         const tokenId = log.tokenId.toString();
         if (activeBrokers.has(tokenId)) {
             activeBrokers.delete(tokenId);
-            
             stats.allTime.deactivated++;
             if (age <= oneDay) stats['24h'].deactivated++;
             if (age <= 7 * oneDay) stats['7d'].deactivated++;
             if (age <= 30 * oneDay) stats['30d'].deactivated++;
 
-            if (ts > 0) {
-                const date = new Date(ts * 1000);
-                const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
-                if (!dailyData[dateStr]) dailyData[dateStr] = { activated: 0, deactivated: 0, timestamp: new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime() / 1000 };
-                dailyData[dateStr].deactivated++;
-            }
+            const date = new Date(ts * 1000);
+            const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
+            if (!dailyData[dateStr]) dailyData[dateStr] = { activated: 0, deactivated: 0, timestamp: new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime() / 1000 };
+            dailyData[dateStr].deactivated++;
         }
         continue;
     }
@@ -314,7 +327,6 @@ async function fetchActivations() {
     try {
       const topics = log.topics && Array.isArray(log.topics) ? log.topics.filter(t => t !== null) : 
                      [log.topic0, log.topic1, log.topic2, log.topic3].filter(t => t);
-
       const parsed = iface.parseLog({ topics, data: log.data });
       if (!parsed) continue;
 
@@ -339,64 +351,56 @@ async function fetchActivations() {
               if (isDeact) stats['30d'].deactivated++;
           }
 
-          if (ts > 0) {
-              const date = new Date(ts * 1000);
-              const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
-              if (!dailyData[dateStr]) {
-                  dailyData[dateStr] = { activated: 0, deactivated: 0, timestamp: new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime() / 1000 };
-              }
-              if (isAct) dailyData[dateStr].activated++;
-              if (isDeact) dailyData[dateStr].deactivated++;
+          const date = new Date(ts * 1000);
+          const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
+          if (!dailyData[dateStr]) {
+              dailyData[dateStr] = { activated: 0, deactivated: 0, timestamp: new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime() / 1000 };
           }
+          if (isAct) dailyData[dateStr].activated++;
+          if (isDeact) dailyData[dateStr].deactivated++;
       }
 
-      if (isAct) {
-        activeBrokers.set(tokenId, `T${parsed.args.tier.toString()}`);
-      } else if (isDeact) {
-        activeBrokers.delete(tokenId);
-      }
+      if (isAct) activeBrokers.set(tokenId, `T${parsed.args.tier.toString()}`);
+      else if (isDeact) activeBrokers.delete(tokenId);
     } catch (e) {}
   }
 
-  // 2. Fill missing days sequentially to guarantee continuous charts
-  const rawDates = Object.keys(dailyData).sort((a, b) => dailyData[a].timestamp - dailyData[b].timestamp);
-  if (rawDates.length > 0) {
-      const firstTimestamp = dailyData[rawDates[0]].timestamp;
-      const lastTimestamp = new Date(new Date().setHours(0,0,0,0)).getTime() / 1000;
-      
-      let currentTs = firstTimestamp;
-      while (currentTs <= lastTimestamp) {
-          const date = new Date(currentTs * 1000);
-          const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
-          if (!dailyData[dateStr]) {
-              dailyData[dateStr] = { activated: 0, deactivated: 0, timestamp: currentTs };
-          }
-          currentTs += 86400; 
-      }
+  // Safety constraint: Don't render empty days from 50 years ago if time math bugs out
+  if (minTs < now - (60 * 86400)) minTs = now - (60 * 86400);
+
+  const startOfDay = new Date(minTs * 1000);
+  startOfDay.setHours(0,0,0,0);
+  let currentTs = startOfDay.getTime() / 1000;
+
+  while (currentTs <= now) {
+      const d = new Date(currentTs * 1000);
+      const dateStr = `${d.getMonth() + 1}/${d.getDate()}`;
+      if (!dailyData[dateStr]) dailyData[dateStr] = { activated: 0, deactivated: 0, timestamp: currentTs };
+      currentTs += 86400; 
   }
 
   const sortedDates = Object.keys(dailyData).sort((a, b) => dailyData[a].timestamp - dailyData[b].timestamp);
   
-  const historyLabels = [];
-  const dailyActivations = [];
-  const dailyDeactivations = [];
-  const cumulativeActive = [];
+  const finalLabels = [];
+  const finalDailyActs = [];
+  const finalDailyDeacts = [];
+  const finalCumulative = [];
   let runningActive = 0;
 
   for (const dateStr of sortedDates) {
-      historyLabels.push(dateStr);
+      finalLabels.push(dateStr);
       const d = dailyData[dateStr];
-      dailyActivations.push(d.activated);
-      dailyDeactivations.push(d.deactivated);
+      finalDailyActs.push(d.activated);
+      finalDailyDeacts.push(d.deactivated);
       
       runningActive += d.activated;
       runningActive -= d.deactivated;
-      cumulativeActive.push(runningActive);
+      finalCumulative.push(runningActive);
   }
 
   const breakdown = { T0: 0, T1: 0, T2: 0, T3: 0, T4: 0 };
   for (const tier of activeBrokers.values()) {
-    if (breakdown[tier] !== undefined) breakdown[tier]++;
+      if (breakdown[tier] !== undefined) breakdown[tier]++;
   }
 
   const activeCount = activeBrokers.size;
@@ -411,10 +415,10 @@ async function fetchActivations() {
     totalSupply,
     stats,
     history: {
-      labels: historyLabels,
-      dailyActivations,
-      dailyDeactivations,
-      cumulative: cumulativeActive
+      labels: finalLabels,
+      dailyActivations: finalDailyActs,
+      dailyDeactivations: finalDailyDeacts,
+      cumulative: finalCumulative
     },
     dualBurn
   };
