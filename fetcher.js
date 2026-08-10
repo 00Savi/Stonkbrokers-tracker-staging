@@ -192,37 +192,6 @@ async function fetchAllLogs(address) {
   return uniqueLogs;
 }
 
-async function getBurnEvents() {
-  console.log("Fetching NFT burn events...");
-  const burnEvents = [];
-  const deadAddresses = ["0x000000000000000000000000000000000000dead", "0x0000000000000000000000000000000000000000"];
-  
-  for (const addr of deadAddresses) {
-    let page = 1;
-    while(true) {
-      const url = `${PRO_API}?chain_id=${CHAIN_ID}&module=account&action=tokennfttx&contractaddress=${NFT_CONTRACT}&address=${addr}&page=${page}&offset=1000&sort=asc&apikey=${API_KEY}`;
-      const data = await secureFetch(url);
-      const txs = Array.isArray(data.result) ? data.result : [];
-      if (txs.length === 0) break;
-      for (const tx of txs) {
-        if ((tx.to || "").toLowerCase() === addr) {
-           burnEvents.push({
-             isBurn: true,
-             blockNumber: tx.blockNumber,
-             logIndex: (parseInt(tx.transactionIndex || 0, 10) * 1000).toString(), 
-             timeStamp: tx.timeStamp,
-             tokenId: tx.tokenID
-           });
-        }
-      }
-      if (txs.length < 1000) break;
-      page++;
-      await sleep(250);
-    }
-  }
-  return burnEvents;
-}
-
 async function getTrueDeflationStats() {
   let currentSupply = MAX_STONK_SUPPLY;
   let deadBalance = 0;
@@ -261,8 +230,8 @@ async function getTrueDeflationStats() {
   };
 }
 
-// SAFE PHASE 3: Protected secureFetch for Ownership Metrics
-async function getOwnershipStats(totalNftBurns) {
+// Ownership Stats updated to utilize Equiv Burnt and dynamic grid math
+async function getOwnershipStats(equivBurnt) {
   console.log("Fetching Ownership & True Circulating Supply Stats safely...");
   let ammVaultNfts = 0;
   let rawNftHolders = 0;
@@ -280,7 +249,6 @@ async function getOwnershipStats(totalNftBurns) {
       console.warn("AMM Vault NFT fetch warning:", e.message);
   }
 
-  // Use the protected secureFetch wrapper to prevent any hanging or silent timeouts
   try {
     const nftData = await secureFetch(`https://robinhoodchain.blockscout.com/api/v2/tokens/${NFT_CONTRACT}`);
     if (nftData && nftData.holders) rawNftHolders = parseInt(nftData.holders, 10);
@@ -291,14 +259,14 @@ async function getOwnershipStats(totalNftBurns) {
     if (stonkData && stonkData.holders) rawStonkHolders = parseInt(stonkData.holders, 10);
   } catch (e) {}
 
-  // Safe fallback minimums in case the V2 api is strictly rate limited
   if (rawNftHolders === 0) rawNftHolders = 1500; 
   if (rawStonkHolders === 0) rawStonkHolders = 2500;
 
   const trueUniqueNftHolders = Math.max(0, rawNftHolders - 3);
   const trueUniqueStonkHolders = Math.max(0, rawStonkHolders - 3);
 
-  const circulatingNftSupply = 4444 - ammVaultNfts - totalNftBurns;
+  const circulatingNftSupply = 4444 - ammVaultNfts;
+  const currentMaxSupply = 4444 - equivBurnt;
   const ownershipRatio = circulatingNftSupply > 0 ? (trueUniqueNftHolders / circulatingNftSupply) * 100 : 0;
 
   console.log(`  -> AMM Vault Inventory: ${ammVaultNfts} NFTs`);
@@ -307,7 +275,8 @@ async function getOwnershipStats(totalNftBurns) {
 
   return {
     ammVaultNfts,
-    burntNfts: totalNftBurns,
+    burntNfts: equivBurnt,
+    currentMaxSupply,
     circulatingNftSupply,
     nftHolders: trueUniqueNftHolders,
     stonkHolders: trueUniqueStonkHolders,
@@ -316,17 +285,8 @@ async function getOwnershipStats(totalNftBurns) {
 }
 
 async function fetchActivations() {
-  const allLogs = await fetchAllLogs(ACTIVATION_MANAGER);
-  const burnEvents = await getBurnEvents();
-  const mergedLogs = [...allLogs, ...burnEvents].sort((a, b) => {
-    const blockA = a.blockNumber.toString().startsWith("0x") ? parseInt(a.blockNumber, 16) : parseInt(a.blockNumber, 10);
-    const blockB = b.blockNumber.toString().startsWith("0x") ? parseInt(b.blockNumber, 16) : parseInt(b.blockNumber, 10);
-    if (blockA !== blockB) return blockA - blockB;
-    const logIdxA = a.logIndex.toString().startsWith("0x") ? parseInt(a.logIndex, 16) : parseInt(a.logIndex, 10);
-    const logIdxB = b.logIndex.toString().startsWith("0x") ? parseInt(b.logIndex, 16) : parseInt(b.logIndex, 10);
-    return logIdxA - logIdxB;
-  });
-
+  const mergedLogs = await fetchAllLogs(ACTIVATION_MANAGER);
+  
   const activeBrokers = new Map(); 
   const dailyData = {};
   const now = Math.floor(Date.now() / 1000);
@@ -355,23 +315,6 @@ async function fetchActivations() {
     if (ts === 0) ts = Math.floor(now - ((highestBlock - bNum) * 2)); 
     if (ts > 0 && ts < minTs) minTs = ts;
     const age = now - ts;
-
-    if (log.isBurn) {
-        const tokenId = log.tokenId.toString();
-        if (activeBrokers.has(tokenId)) {
-            activeBrokers.delete(tokenId);
-            stats.allTime.deactivated++;
-            if (age <= oneDay) stats['24h'].deactivated++;
-            if (age <= 7 * oneDay) stats['7d'].deactivated++;
-            if (age <= 30 * oneDay) stats['30d'].deactivated++;
-
-            const date = new Date(ts * 1000);
-            const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
-            if (!dailyData[dateStr]) dailyData[dateStr] = { activated: 0, deactivated: 0, timestamp: new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime() / 1000 };
-            dailyData[dateStr].deactivated++;
-        }
-        continue;
-    }
 
     try {
       const topics = log.topics && Array.isArray(log.topics) ? log.topics.filter(t => t !== null) : 
@@ -468,8 +411,7 @@ async function fetchActivations() {
       dailyDeactivations: finalDailyDeacts,
       cumulative: finalCumulative
     },
-    dualBurn,
-    totalNftBurns: burnEvents.length
+    dualBurn
   };
 }
 
@@ -588,7 +530,7 @@ async function run() {
   const sevenDaysAgo = Math.floor(Date.now() / 1000) - 7 * 24 * 3600;
   
   const activationStats = await fetchActivations();
-  const ownershipStats = await getOwnershipStats(activationStats.totalNftBurns);
+  const ownershipStats = await getOwnershipStats(activationStats.dualBurn.equivalentBrokersBurnt);
   const yieldData = await getGlobalYield(sevenDaysAgo, activationStats);
   
   const globalAnnualYield = yieldData.global7DayUsd * 52.14;
@@ -626,7 +568,7 @@ async function run() {
   };
 
   fs.writeFileSync("data.json", JSON.stringify(out, null, 2));
-  console.log("\n✓ Dashboard Phase 3 payload generated successfully.");
+  console.log("\n✓ Dashboard payload generated successfully.");
 }
 
 run().catch(err => {
