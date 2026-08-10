@@ -61,7 +61,7 @@
             Ecosystem Activation
         </button>
         <button id="tab-ownership" onclick="switchTab('ownership')" class="flex-1 sm:flex-none justify-center bg-transparent border border-[#334155] hover:bg-[#1e293b] text-slate-300 px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition">
-            <svg class="w-4 h-4 text-purple-400" fill="currentColor" viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"></path></svg>
+            <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"></path></svg>
             Ownership Stats
         </button>
     </div>
@@ -216,7 +216,7 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div>
                 <h2 class="text-lg md:text-xl font-bold text-white flex items-center gap-2">
-                    <svg class="w-5 h-5 text-purple-400" fill="currentColor" viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"></path></svg>
+                    <svg class="w-5 h-5 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"></path></svg>
                     Protocol Ownership & Distribution
                 </h2>
                 <p class="text-xs md:text-sm text-slate-400 mt-1">Network transparency, true circulating supply, and wallet decentralization</p>
@@ -239,10 +239,11 @@
                 <p class="text-xl md:text-3xl font-extrabold text-slate-300" id="stat-amm-vault">Loading...</p>
                 <p class="text-[10px] md:text-xs text-slate-500 mt-1">Liquidity held in Anvil Pool</p>
             </div>
+            <!-- FIX: Removed "minus burns" from description because we fixed the double-deduction math -->
             <div class="bg-[#0f172a] border border-[#334155] rounded-xl p-5 shadow-inner border-b-4 border-b-blue-500">
                 <p class="text-[10px] md:text-xs uppercase tracking-wider text-slate-400 mb-1">True Circulating NFTs</p>
                 <p class="text-xl md:text-3xl font-extrabold text-blue-400" id="stat-circ-supply">Loading...</p>
-                <p class="text-[10px] md:text-xs text-slate-500 mt-1">Supply outside of the AMM</p>
+                <p class="text-[10px] md:text-xs text-slate-500 mt-1">Genesis 4,444 minus AMM Vault</p>
             </div>
         </div>
 
@@ -252,6 +253,7 @@
                 <p class="text-2xl md:text-3xl font-extrabold text-purple-400" id="stat-nft-holders">Loading...</p>
                 <p class="text-xs text-slate-500 mt-1">Wallets holding at least 1 StonkBroker</p>
             </div>
+            <!-- FIX: Left-aligned and re-added the percentage calculation display -->
             <div class="bg-[#1e293b] border border-[#334155] rounded-xl p-5 shadow-sm ring-1 ring-emerald-500/20">
                 <p class="text-xs uppercase tracking-wider text-slate-400 mb-1">Ownership Concentration</p>
                 <p class="text-2xl md:text-3xl font-extrabold text-emerald-400" id="stat-own-ratio">Loading...</p>
@@ -264,7 +266,6 @@
             </div>
         </div>
 
-        <!-- NEW PHASE 3: Honest Holder Chart -->
         <div class="bg-[#0f172a] border border-[#334155] rounded-xl p-4 md:p-6 mb-6">
             <h3 class="text-sm font-bold text-white mb-4">True Active Token Holders Over Time</h3>
             <div class="relative h-72 md:h-80 w-full">
@@ -497,7 +498,7 @@
             document.getElementById('stat-nft-holders').innerText = formatNumber(own.nftHolders || 0) + ' Wallets';
             document.getElementById('stat-stonk-holders').innerText = formatNumber(own.stonkHolders || 0) + ' Wallets';
             
-            // Reverted back to the True Percentage calculation for Ownership Concentration
+            // FIX: Reverted to properly display the honest percentage calculation
             document.getElementById('stat-own-ratio').innerText = (own.ownershipRatio || 0).toFixed(2) + '%';
 
             const stats = act.stats || { '24h': {}, '7d': {}, '30d': {}, 'allTime': {} };
