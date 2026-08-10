@@ -1,55 +1,55 @@
 {
   "market": {
-    "ethPriceUsd": 1869.7,
-    "tokenPriceUsd": 0.03205,
-    "nftFloorEth": 12.571
+    "ethPriceUsd": 1870.6,
+    "tokenPriceUsd": 0.03201,
+    "nftFloorEth": 12.549
   },
   "activation": {
-    "activeCount": 1666,
+    "activeCount": 1,
     "breakdown": {
-      "T0": 1476,
-      "T1": 78,
-      "T2": 46,
-      "T3": 36,
-      "T4": 30
+      "T0": 1,
+      "T1": 0,
+      "T2": 0,
+      "T3": 0,
+      "T4": 0
     },
-    "percentActivated": 37.49,
+    "percentActivated": 0.02,
     "totalSupply": 4444,
     "tierStats": {
       "T0": {
         "24h": {
-          "act": 14,
-          "deact": 11
+          "act": 0,
+          "deact": 0
         },
         "7d": {
-          "act": 102,
-          "deact": 107
+          "act": 0,
+          "deact": 0
         },
         "30d": {
-          "act": 2116,
-          "deact": 640
+          "act": 1,
+          "deact": 0
         },
         "allTime": {
-          "act": 2116,
-          "deact": 640
+          "act": 1,
+          "deact": 0
         }
       },
       "T1": {
         "24h": {
-          "act": 1,
+          "act": 0,
           "deact": 0
         },
         "7d": {
-          "act": 5,
-          "deact": 5
+          "act": 0,
+          "deact": 0
         },
         "30d": {
-          "act": 111,
-          "deact": 33
+          "act": 0,
+          "deact": 0
         },
         "allTime": {
-          "act": 111,
-          "deact": 33
+          "act": 0,
+          "deact": 0
         }
       },
       "T2": {
@@ -58,16 +58,16 @@
           "deact": 0
         },
         "7d": {
-          "act": 3,
-          "deact": 2
+          "act": 0,
+          "deact": 0
         },
         "30d": {
-          "act": 63,
-          "deact": 17
+          "act": 0,
+          "deact": 0
         },
         "allTime": {
-          "act": 63,
-          "deact": 17
+          "act": 0,
+          "deact": 0
         }
       },
       "T3": {
@@ -76,16 +76,16 @@
           "deact": 0
         },
         "7d": {
-          "act": 8,
-          "deact": 1
+          "act": 0,
+          "deact": 0
         },
         "30d": {
-          "act": 42,
-          "deact": 6
+          "act": 0,
+          "deact": 0
         },
         "allTime": {
-          "act": 42,
-          "deact": 6
+          "act": 0,
+          "deact": 0
         }
       },
       "T4": {
@@ -94,16 +94,16 @@
           "deact": 0
         },
         "7d": {
-          "act": 1,
+          "act": 0,
           "deact": 0
         },
         "30d": {
-          "act": 33,
-          "deact": 3
+          "act": 0,
+          "deact": 0
         },
         "allTime": {
-          "act": 33,
-          "deact": 3
+          "act": 0,
+          "deact": 0
         }
       }
     },
@@ -137,96 +137,96 @@
       ],
       "dailyActivations": [
         0,
-        1374,
-        261,
-        176,
-        95,
-        50,
-        64,
-        25,
-        23,
-        24,
-        33,
-        14,
-        18,
-        13,
-        7,
-        22,
-        31,
-        19,
-        15,
-        25,
-        23,
-        12,
-        22,
-        7,
-        12
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
       ],
       "dailyDeactivations": [
         0,
-        59,
-        161,
-        62,
-        39,
-        19,
-        21,
-        12,
-        16,
-        27,
-        38,
-        6,
-        34,
-        15,
-        7,
-        23,
-        30,
-        18,
-        12,
-        4,
-        14,
-        14,
-        38,
-        23,
-        7
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
       ],
       "cumulative": [
         0,
-        1315,
-        1415,
-        1529,
-        1585,
-        1616,
-        1659,
-        1672,
-        1679,
-        1676,
-        1671,
-        1679,
-        1663,
-        1661,
-        1661,
-        1660,
-        1661,
-        1662,
-        1665,
-        1686,
-        1695,
-        1693,
-        1677,
-        1661,
-        1666
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
       ]
     },
     "dualBurn": {
-      "totalBurnTokens": 534232016,
-      "equivalentBrokersBurnt": 801.35
+      "totalBurnTokens": 533790000,
+      "equivalentBrokersBurnt": 800.69
     }
   },
   "ownership": {
-    "ammVaultNfts": 2266,
-    "burntNfts": 801.35,
-    "currentMaxSupply": 3642.65,
-    "circulatingNftSupply": 2178,
+    "ammVaultNfts": null,
+    "burntNfts": 800.69,
+    "currentMaxSupply": 3643.31,
+    "circulatingNftSupply": null,
     "nftHolders": 0,
     "stonkHolders": 0,
     "ownershipRatio": 0,
@@ -381,5 +381,5 @@
       ]
     }
   ],
-  "lastUpdated": "2026-08-10T18:48:22.719Z"
+  "lastUpdated": "2026-08-10T18:58:39.514Z"
 }
