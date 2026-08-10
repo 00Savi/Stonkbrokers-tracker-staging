@@ -1,8 +1,8 @@
 {
   "market": {
-    "ethPriceUsd": 1874.23,
-    "tokenPriceUsd": 0.03224,
-    "nftFloorEth": 12.615
+    "ethPriceUsd": 1876.64,
+    "tokenPriceUsd": 0.032,
+    "nftFloorEth": 12.505
   },
   "activation": {
     "activeCount": 1,
@@ -381,5 +381,5 @@
       ]
     }
   ],
-  "lastUpdated": "2026-08-10T19:23:26.948Z"
+  "lastUpdated": "2026-08-10T20:18:17.788Z"
 }
