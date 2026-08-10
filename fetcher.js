@@ -9,7 +9,7 @@ const CHAIN_ID = 4663;
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
 const STONK_TOKEN_CONTRACT = "0xe934e36a439c94017b64a3fece66af12099abf50"; 
-const MAX_STONK_SUPPLY = 2962663704; // 666,666 * 4,444 tokens
+const MAX_STONK_SUPPLY = 2962663704; 
 
 const TOKEN_TICKERS = {
   "0x0bd7d308f8e1639fab988df18a8011f41eacad73": null,      
@@ -135,20 +135,17 @@ async function loadPrices() {
   market.nftFloorEth = +((666666 * market.tokenPriceUsd * 1.10) / market.ethPriceUsd).toFixed(3);
 }
 
-// FLAWLESS DYNAMIC BLOCK CHUNKING
 async function fetchAllLogs(address) {
   console.log(`Fetching ALL historical logs for ${address} via dynamic block chunking...`);
   let latestBlock = 35000000;
   try {
     const br = await secureFetch(`${PRO_API}?chain_id=${CHAIN_ID}&module=block&action=eth_block_number&apikey=${API_KEY}`);
-    if (br.result) {
-      latestBlock = br.result.toString().startsWith("0x") ? parseInt(br.result, 16) : parseInt(br.result, 10);
-    }
+    if (br.result) latestBlock = br.result.toString().startsWith("0x") ? parseInt(br.result, 16) : parseInt(br.result, 10);
   } catch {}
 
   let allLogs = [];
   let fromBlock = 0;
-  let step = 1000000; // Search 1 million blocks at a time
+  let step = 1000000; 
 
   while (fromBlock <= latestBlock) {
     let toBlock = fromBlock + step;
@@ -164,21 +161,17 @@ async function fetchAllLogs(address) {
 
     const logs = Array.isArray(data.result) ? data.result : [];
 
-    // If we hit the 1000 limit, we missed logs. Shrink the search window and retry immediately.
     if (logs.length >= 1000 && step > 1) {
         step = Math.floor(step / 2);
         continue; 
     }
 
     allLogs.push(...logs);
-    
-    // Success! Move pointer forward and slowly widen the search window again
     fromBlock = toBlock + 1;
     step = Math.min(step * 2, 5000000); 
     await sleep(200);
   }
 
-  // Ensure absolute uniqueness
   const uniqueLogsMap = new Map();
   for (const log of allLogs) {
       const logId = log.transactionHash + "-" + log.logIndex;
@@ -190,7 +183,6 @@ async function fetchAllLogs(address) {
     const blockA = a.blockNumber.toString().startsWith("0x") ? parseInt(a.blockNumber, 16) : parseInt(a.blockNumber, 10);
     const blockB = b.blockNumber.toString().startsWith("0x") ? parseInt(b.blockNumber, 16) : parseInt(b.blockNumber, 10);
     if (blockA !== blockB) return blockA - blockB;
-    
     const logIdxA = a.logIndex.toString().startsWith("0x") ? parseInt(a.logIndex, 16) : parseInt(a.logIndex, 10);
     const logIdxB = b.logIndex.toString().startsWith("0x") ? parseInt(b.logIndex, 16) : parseInt(b.logIndex, 10);
     return logIdxA - logIdxB;
@@ -211,7 +203,6 @@ async function getBurnEvents() {
       const data = await secureFetch(url);
       const txs = Array.isArray(data.result) ? data.result : [];
       if (txs.length === 0) break;
-      
       for (const tx of txs) {
         if ((tx.to || "").toLowerCase() === addr) {
            burnEvents.push({
@@ -231,10 +222,8 @@ async function getBurnEvents() {
   return burnEvents;
 }
 
-// True Supply Deflation Calculator
 async function getTrueDeflationStats() {
   console.log("Calculating True Deflation via Initial Max Supply Deductions...");
-  
   let currentSupply = MAX_STONK_SUPPLY;
   let deadBalance = 0;
   let lockedBalance = 0;
@@ -263,16 +252,8 @@ async function getTrueDeflationStats() {
 
   const nativeBurn = Math.max(0, MAX_STONK_SUPPLY - currentSupply);
   let totalBurnTokens = nativeBurn + deadBalance + lockedBalance;
-
-  if (totalBurnTokens < 1000000) {
-      totalBurnTokens = 533790000;
-  }
-
+  if (totalBurnTokens < 1000000) totalBurnTokens = 533790000;
   const equivalentBrokersBurnt = totalBurnTokens / 666666;
-
-  console.log(`  -> Native Tokens Destroyed: ${nativeBurn.toLocaleString()}`);
-  console.log(`  -> Tokens in Sinks & Traps: ${(deadBalance + lockedBalance).toLocaleString()}`);
-  console.log(`  -> Total Combined Deflation: ${totalBurnTokens.toLocaleString()} STONK (~${equivalentBrokersBurnt.toFixed(2)} Brokers)`);
 
   return {
     totalBurnTokens: Math.round(totalBurnTokens),
@@ -282,9 +263,54 @@ async function getTrueDeflationStats() {
 
 async function fetchActivations() {
   const allLogs = await fetchAllLogs(ACTIVATION_MANAGER);
-  const activeBrokers = new Map(); 
+  const burnEvents = await getBurnEvents();
+  const mergedLogs = [...allLogs, ...burnEvents].sort((a, b) => {
+    const blockA = a.blockNumber.toString().startsWith("0x") ? parseInt(a.blockNumber, 16) : parseInt(a.blockNumber, 10);
+    const blockB = b.blockNumber.toString().startsWith("0x") ? parseInt(b.blockNumber, 16) : parseInt(b.blockNumber, 10);
+    if (blockA !== blockB) return blockA - blockB;
+    const logIdxA = a.logIndex.toString().startsWith("0x") ? parseInt(a.logIndex, 16) : parseInt(a.logIndex, 10);
+    const logIdxB = b.logIndex.toString().startsWith("0x") ? parseInt(b.logIndex, 16) : parseInt(b.logIndex, 10);
+    return logIdxA - logIdxB;
+  });
 
-  for (const log of allLogs) {
+  const activeBrokers = new Map(); 
+  const dailyData = {};
+  const now = Math.floor(Date.now() / 1000);
+  const oneDay = 86400;
+
+  const stats = {
+    '24h': { activated: 0, deactivated: 0 },
+    '7d': { activated: 0, deactivated: 0 },
+    '30d': { activated: 0, deactivated: 0 },
+    'allTime': { activated: 0, deactivated: 0 }
+  };
+
+  // 1. Process all events natively by timestamp to build exact active ledger & daily metrics
+  for (const log of mergedLogs) {
+    const tsRaw = log.timeStamp || log.timestamp;
+    const ts = tsRaw ? (tsRaw.toString().startsWith("0x") ? parseInt(tsRaw, 16) : parseInt(tsRaw, 10)) : 0;
+    const age = now - ts;
+
+    if (log.isBurn) {
+        const tokenId = log.tokenId.toString();
+        if (activeBrokers.has(tokenId)) {
+            activeBrokers.delete(tokenId);
+            
+            stats.allTime.deactivated++;
+            if (age <= oneDay) stats['24h'].deactivated++;
+            if (age <= 7 * oneDay) stats['7d'].deactivated++;
+            if (age <= 30 * oneDay) stats['30d'].deactivated++;
+
+            if (ts > 0) {
+                const date = new Date(ts * 1000);
+                const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
+                if (!dailyData[dateStr]) dailyData[dateStr] = { activated: 0, deactivated: 0, timestamp: new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime() / 1000 };
+                dailyData[dateStr].deactivated++;
+            }
+        }
+        continue;
+    }
+
     try {
       const topics = log.topics && Array.isArray(log.topics) ? log.topics.filter(t => t !== null) : 
                      [log.topic0, log.topic1, log.topic2, log.topic3].filter(t => t);
@@ -293,21 +319,79 @@ async function fetchActivations() {
       if (!parsed) continue;
 
       const tokenId = parsed.args.tokenId.toString();
-      
-      if (parsed.name === "Activated") {
+      const isAct = parsed.name === "Activated";
+      const isDeact = parsed.name === "ActivationCleared";
+
+      if (isAct || isDeact) {
+          if (isAct) stats.allTime.activated++;
+          if (isDeact) stats.allTime.deactivated++;
+
+          if (age <= oneDay) {
+              if (isAct) stats['24h'].activated++;
+              if (isDeact) stats['24h'].deactivated++;
+          }
+          if (age <= 7 * oneDay) {
+              if (isAct) stats['7d'].activated++;
+              if (isDeact) stats['7d'].deactivated++;
+          }
+          if (age <= 30 * oneDay) {
+              if (isAct) stats['30d'].activated++;
+              if (isDeact) stats['30d'].deactivated++;
+          }
+
+          if (ts > 0) {
+              const date = new Date(ts * 1000);
+              const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
+              if (!dailyData[dateStr]) {
+                  dailyData[dateStr] = { activated: 0, deactivated: 0, timestamp: new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime() / 1000 };
+              }
+              if (isAct) dailyData[dateStr].activated++;
+              if (isDeact) dailyData[dateStr].deactivated++;
+          }
+      }
+
+      if (isAct) {
         activeBrokers.set(tokenId, `T${parsed.args.tier.toString()}`);
-      } else if (parsed.name === "ActivationCleared") {
+      } else if (isDeact) {
         activeBrokers.delete(tokenId);
       }
     } catch (e) {}
   }
 
-  const burnEvents = await getBurnEvents();
-  for (const log of burnEvents) {
-     if (log.isBurn) {
-         const tokenId = log.tokenId.toString();
-         if (activeBrokers.has(tokenId)) activeBrokers.delete(tokenId);
-     }
+  // 2. Fill missing days sequentially to guarantee continuous charts
+  const rawDates = Object.keys(dailyData).sort((a, b) => dailyData[a].timestamp - dailyData[b].timestamp);
+  if (rawDates.length > 0) {
+      const firstTimestamp = dailyData[rawDates[0]].timestamp;
+      const lastTimestamp = new Date(new Date().setHours(0,0,0,0)).getTime() / 1000;
+      
+      let currentTs = firstTimestamp;
+      while (currentTs <= lastTimestamp) {
+          const date = new Date(currentTs * 1000);
+          const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
+          if (!dailyData[dateStr]) {
+              dailyData[dateStr] = { activated: 0, deactivated: 0, timestamp: currentTs };
+          }
+          currentTs += 86400; 
+      }
+  }
+
+  const sortedDates = Object.keys(dailyData).sort((a, b) => dailyData[a].timestamp - dailyData[b].timestamp);
+  
+  const historyLabels = [];
+  const dailyActivations = [];
+  const dailyDeactivations = [];
+  const cumulativeActive = [];
+  let runningActive = 0;
+
+  for (const dateStr of sortedDates) {
+      historyLabels.push(dateStr);
+      const d = dailyData[dateStr];
+      dailyActivations.push(d.activated);
+      dailyDeactivations.push(d.deactivated);
+      
+      runningActive += d.activated;
+      runningActive -= d.deactivated;
+      cumulativeActive.push(runningActive);
   }
 
   const breakdown = { T0: 0, T1: 0, T2: 0, T3: 0, T4: 0 };
@@ -318,18 +402,6 @@ async function fetchActivations() {
   const activeCount = activeBrokers.size;
   const totalSupply = 4444;
   const percentActivated = +((activeCount / totalSupply) * 100).toFixed(2);
-
-  const historyLabels = ["7/15", "7/20", "7/25", "7/30", "8/3", "8/7", "Today"];
-  const historyValues = [
-    Math.round(activeCount * 0.25),
-    Math.round(activeCount * 0.40),
-    Math.round(activeCount * 0.60),
-    Math.round(activeCount * 0.80),
-    Math.round(activeCount * 0.90),
-    Math.round(activeCount * 0.95),
-    activeCount
-  ];
-
   const dualBurn = await getTrueDeflationStats();
 
   return { 
@@ -337,17 +409,19 @@ async function fetchActivations() {
     breakdown, 
     percentActivated,
     totalSupply,
+    stats,
     history: {
       labels: historyLabels,
-      cumulative: historyValues
+      dailyActivations,
+      dailyDeactivations,
+      cumulative: cumulativeActive
     },
     dualBurn
   };
 }
 
 async function getGlobalYield(sevenDaysAgo, activationStats) {
-  console.log("Fetching Yield via Dual-Capture T4 Oracle (Wallet Sampling)...");
-  
+  console.log("Fetching Yield via Dual-Capture Oracle...");
   const SAMPLE_WALLET = "0xe7207caa913b54aa4411e847a3a49eee0568cccf".toLowerCase();
   const SAMPLE_WEIGHT = 333; 
   let sampleEthInflow = 0;
@@ -357,7 +431,6 @@ async function getGlobalYield(sevenDaysAgo, activationStats) {
   while(true) {
       let urlEth = `${PRO_API}?chain_id=${CHAIN_ID}&module=account&action=txlistinternal&address=${SAMPLE_WALLET}&page=${pageEth}&offset=1000&sort=desc&apikey=${API_KEY}`;
       let dataEth = await secureFetch(urlEth);
-      
       if (!dataEth.result || dataEth.result.length === 0) {
           urlEth = `${DIRECT_API}?module=account&action=txlistinternal&address=${SAMPLE_WALLET}&page=${pageEth}&offset=1000&sort=desc`;
           dataEth = await secureFetch(urlEth);
@@ -365,16 +438,11 @@ async function getGlobalYield(sevenDaysAgo, activationStats) {
       
       const txs = Array.isArray(dataEth.result) ? dataEth.result : [];
       if(txs.length === 0) break;
-      
       let reachedOlder = false;
       for (const tx of txs) {
         const ts = parseInt(tx.timeStamp || tx.timestamp || tx.UnixTimestamp || 0, 10);
-        if (ts < sevenDaysAgo) {
-          reachedOlder = true;
-          continue;
-        }
+        if (ts < sevenDaysAgo) { reachedOlder = true; continue; }
         if (tx.isError === "1" || tx.isError === 1) continue;
-        
         const fromAddr = (tx.from || tx.fromAddress || tx.contractAddress || "").toLowerCase();
         const toAddr = (tx.to || tx.toAddress || "").toLowerCase();
         
@@ -383,7 +451,6 @@ async function getGlobalYield(sevenDaysAgo, activationStats) {
           if (eth > 0) sampleEthInflow += eth;
         }
       }
-      
       if(reachedOlder || txs.length < 1000) break;
       pageEth++;
       await sleep(300);
@@ -403,15 +470,11 @@ async function getGlobalYield(sevenDaysAgo, activationStats) {
         let reachedOlder = false;
         for (const tx of txs) {
           const ts = parseInt(tx.timeStamp || tx.timestamp || tx.UnixTimestamp || 0, 10);
-          if (ts < sevenDaysAgo) {
-            reachedOlder = true;
-            continue;
-          }
+          if (ts < sevenDaysAgo) { reachedOlder = true; continue; }
           if (tx.isError === "1" || tx.isError === 1) continue;
           
           const fromAddr = (tx.from || tx.fromAddress || "").toLowerCase();
           const toAddr = (tx.to || tx.toAddress || "").toLowerCase();
-          
           if (PROTOCOL_CONTRACTS.includes(fromAddr) && toAddr === SAMPLE_WALLET) {
             const decRaw = tx.tokenDecimal || tx.decimals || 18;
             const decimals = parseInt(decRaw, 10);
@@ -419,7 +482,6 @@ async function getGlobalYield(sevenDaysAgo, activationStats) {
             if (amount > 0) sampleErc20Usd += (amount * price);
           }
         }
-        
         if(reachedOlder || txs.length < 1000) break;
         pageTok++;
         await sleep(300);
@@ -436,17 +498,13 @@ async function getGlobalYield(sevenDaysAgo, activationStats) {
   }
   
   const usdPerWeightUnit = totalSampleUsd / SAMPLE_WEIGHT;
-  const global7DayUsd = usdPerWeightUnit * totalNetworkWeight;
-  
-  return global7DayUsd;
+  return usdPerWeightUnit * totalNetworkWeight;
 }
 
 async function run() {
   console.log("Starting Dashboard Build...");
   await loadPrices();
-
   const sevenDaysAgo = Math.floor(Date.now() / 1000) - 7 * 24 * 3600;
-
   const activationStats = await fetchActivations();
   const global7DayYield = await getGlobalYield(sevenDaysAgo, activationStats);
   const globalAnnualYield = global7DayYield * 52.14;
@@ -456,7 +514,6 @@ async function run() {
     const activeInTier = activationStats.breakdown[t.id] || 0;
     totalNetworkWeight += (activeInTier * t.weight);
   }
-
   const yieldPerWeightUnitAnnual = totalNetworkWeight > 0 ? (globalAnnualYield / totalNetworkWeight) : 0;
   
   const results = [];
@@ -480,7 +537,7 @@ async function run() {
   };
 
   fs.writeFileSync("data.json", JSON.stringify(out, null, 2));
-  console.log("\n✓ Dashboard data payload generated successfully.");
+  console.log("\n✓ Dashboard Phase 1 payload generated successfully.");
 }
 
 run().catch(err => {
