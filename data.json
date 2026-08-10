@@ -1,8 +1,8 @@
 {
   "market": {
-    "ethPriceUsd": 1908.85,
-    "tokenPriceUsd": 0.03131,
-    "nftFloorEth": 12.029
+    "ethPriceUsd": 1917.46,
+    "tokenPriceUsd": 0.0319,
+    "nftFloorEth": 12.2
   },
   "activation": {
     "activeCount": 1662,
@@ -15,29 +15,133 @@
     },
     "percentActivated": 37.4,
     "totalSupply": 4444,
+    "stats": {
+      "24h": {
+        "activated": 8,
+        "deactivated": 18
+      },
+      "7d": {
+        "activated": 124,
+        "deactivated": 123
+      },
+      "30d": {
+        "activated": 2354,
+        "deactivated": 692
+      },
+      "allTime": {
+        "activated": 2354,
+        "deactivated": 692
+      }
+    },
     "history": {
       "labels": [
-        "7/15",
+        "7/18",
+        "7/19",
         "7/20",
+        "7/21",
+        "7/22",
+        "7/23",
+        "7/24",
         "7/25",
+        "7/26",
+        "7/27",
+        "7/28",
+        "7/29",
         "7/30",
+        "7/31",
+        "8/1",
+        "8/2",
         "8/3",
+        "8/4",
+        "8/5",
+        "8/6",
         "8/7",
-        "Today"
+        "8/8",
+        "8/9",
+        "8/10"
+      ],
+      "dailyActivations": [
+        1374,
+        261,
+        176,
+        95,
+        50,
+        64,
+        25,
+        23,
+        24,
+        33,
+        14,
+        18,
+        13,
+        7,
+        22,
+        31,
+        19,
+        15,
+        25,
+        23,
+        12,
+        22,
+        7,
+        1
+      ],
+      "dailyDeactivations": [
+        59,
+        161,
+        62,
+        39,
+        19,
+        21,
+        12,
+        16,
+        27,
+        38,
+        6,
+        34,
+        15,
+        7,
+        23,
+        30,
+        18,
+        12,
+        4,
+        14,
+        14,
+        38,
+        23,
+        0
       ],
       "cumulative": [
-        416,
-        665,
-        997,
-        1330,
-        1496,
-        1579,
+        1315,
+        1415,
+        1529,
+        1585,
+        1616,
+        1659,
+        1672,
+        1679,
+        1676,
+        1671,
+        1679,
+        1663,
+        1661,
+        1661,
+        1660,
+        1661,
+        1662,
+        1665,
+        1686,
+        1695,
+        1693,
+        1677,
+        1661,
         1662
       ]
     },
     "dualBurn": {
-      "totalBurnTokens": 533785606,
-      "equivalentBrokersBurnt": 800.68
+      "totalBurnTokens": 533818939,
+      "equivalentBrokersBurnt": 800.73
     }
   },
   "tiers": [
@@ -47,7 +151,7 @@
       "reqTokens": 66666,
       "multiplier": "1.00x",
       "weight": 100,
-      "trackedAnnualYieldUsd": 5584.012406633707
+      "trackedAnnualYieldUsd": 5617.003812786932
     },
     {
       "tier": "T1",
@@ -55,7 +159,7 @@
       "reqTokens": 166666,
       "multiplier": "1.25x",
       "weight": 125,
-      "trackedAnnualYieldUsd": 6980.015508292134
+      "trackedAnnualYieldUsd": 7021.254765983665
     },
     {
       "tier": "T2",
@@ -63,7 +167,7 @@
       "reqTokens": 366666,
       "multiplier": "1.60x",
       "weight": 160,
-      "trackedAnnualYieldUsd": 8934.419850613931
+      "trackedAnnualYieldUsd": 8987.20610045909
     },
     {
       "tier": "T3",
@@ -71,7 +175,7 @@
       "reqTokens": 666666,
       "multiplier": "2.00x",
       "weight": 200,
-      "trackedAnnualYieldUsd": 11168.024813267413
+      "trackedAnnualYieldUsd": 11234.007625573864
     },
     {
       "tier": "T4",
@@ -79,8 +183,8 @@
       "reqTokens": 1666666,
       "multiplier": "3.33x",
       "weight": 333,
-      "trackedAnnualYieldUsd": 18594.761314090243
+      "trackedAnnualYieldUsd": 18704.62269658048
     }
   ],
-  "lastUpdated": "2026-08-09T23:56:10.406Z"
+  "lastUpdated": "2026-08-10T00:24:11.171Z"
 }
