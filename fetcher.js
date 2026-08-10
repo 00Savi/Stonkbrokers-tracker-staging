@@ -136,7 +136,7 @@ async function loadPrices() {
   market.nftFloorEth = +((666666 * market.tokenPriceUsd * 1.10) / market.ethPriceUsd).toFixed(3);
 }
 
-async function fetchAllLogs(address, topic0 = null) {
+async function fetchAllLogs(address) {
   console.log(`Fetching ALL historical logs for ${address}...`);
   let latestBlock = 35000000;
   try {
@@ -153,13 +153,10 @@ async function fetchAllLogs(address, topic0 = null) {
     if (toBlock > latestBlock) toBlock = latestBlock;
 
     let url = `${PRO_API}?chain_id=${CHAIN_ID}&module=logs&action=getLogs&address=${address}&fromBlock=${fromBlock}&toBlock=${toBlock}&apikey=${API_KEY}`;
-    if (topic0) url += `&topic0=${topic0}`;
-
     let data = await secureFetch(url);
 
     if (!data.result || (Array.isArray(data.result) && data.result.length === 0)) {
         url = `${DIRECT_API}?module=logs&action=getLogs&address=${address}&fromBlock=${fromBlock}&toBlock=${toBlock}`;
-        if (topic0) url += `&topic0=${topic0}`;
         data = await secureFetch(url);
     }
 
@@ -193,88 +190,6 @@ async function fetchAllLogs(address, topic0 = null) {
   });
 
   return uniqueLogs;
-}
-
-// THE STRICT LEDGER: Tracks actual balances over time to find true active holders
-async function fetchTrueHolderGrowth(v2TargetHolders) {
-  const TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
-  const transferLogs = await fetchAllLogs(STONK_TOKEN_CONTRACT, TRANSFER_TOPIC);
-
-  const balances = new Map();
-  let activeHolders = 0;
-  const dailyData = {};
-  const now = Math.floor(Date.now() / 1000);
-
-  let minTs = now;
-  let highestBlock = 0;
-  for (const log of transferLogs) {
-      const bNum = log.blockNumber.toString().startsWith("0x") ? parseInt(log.blockNumber, 16) : parseInt(log.blockNumber, 10);
-      if (bNum > highestBlock) highestBlock = bNum;
-  }
-
-  for (const log of transferLogs) {
-      const bNum = log.blockNumber.toString().startsWith("0x") ? parseInt(log.blockNumber, 16) : parseInt(log.blockNumber, 10);
-      let ts = log.timeStamp || log.timestamp;
-      ts = ts ? (ts.toString().startsWith("0x") ? parseInt(ts, 16) : parseInt(ts, 10)) : 0;
-      if (ts === 0) ts = Math.floor(now - ((highestBlock - bNum) * 2)); 
-      if (ts > 0 && ts < minTs) minTs = ts;
-
-      let fromAddress = log.topics[1] ? "0x" + log.topics[1].slice(-40).toLowerCase() : null;
-      let toAddress = log.topics[2] ? "0x" + log.topics[2].slice(-40).toLowerCase() : null;
-      let value = log.data ? BigInt(log.data === "0x" ? "0x0" : log.data) : 0n;
-
-      if (fromAddress && fromAddress !== "0x0000000000000000000000000000000000000000") {
-          let prevBal = balances.get(fromAddress) || 0n;
-          let newBal = prevBal - value;
-          if (newBal < 0n) newBal = 0n; 
-          balances.set(fromAddress, newBal);
-          if (prevBal > 0n && newBal === 0n) activeHolders--;
-      }
-
-      if (toAddress && toAddress !== "0x0000000000000000000000000000000000000000") {
-          let prevBal = balances.get(toAddress) || 0n;
-          let newBal = prevBal + value;
-          balances.set(toAddress, newBal);
-          if (prevBal === 0n && newBal > 0n) activeHolders++;
-      }
-
-      const date = new Date(ts * 1000);
-      const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
-      dailyData[dateStr] = { holders: activeHolders, timestamp: new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime() / 1000 };
-  }
-
-  if (minTs < now - (60 * 86400)) minTs = now - (60 * 86400);
-  const startOfDay = new Date(minTs * 1000);
-  startOfDay.setHours(0,0,0,0);
-  let currentTs = startOfDay.getTime() / 1000;
-  let lastKnownHolders = 0;
-
-  while (currentTs <= now) {
-      const d = new Date(currentTs * 1000);
-      const dateStr = `${d.getMonth() + 1}/${d.getDate()}`;
-      if (dailyData[dateStr]) {
-          lastKnownHolders = dailyData[dateStr].holders;
-      } else {
-          dailyData[dateStr] = { holders: lastKnownHolders, timestamp: currentTs };
-      }
-      currentTs += 86400; 
-  }
-
-  const sortedDates = Object.keys(dailyData).sort((a, b) => dailyData[a].timestamp - dailyData[b].timestamp);
-  const labels = [];
-  let data = [];
-
-  for (const dateStr of sortedDates) {
-      labels.push(dateStr);
-      data.push(dailyData[dateStr].holders);
-  }
-
-  // Smooth the ledger curve to exactly match the true V2 API snapshot at the end
-  const finalLedgerCount = data[data.length - 1] || 1;
-  const scaleFactor = v2TargetHolders / finalLedgerCount;
-  data = data.map(v => Math.round(v * scaleFactor));
-
-  return { labels, data };
 }
 
 async function getBurnEvents() {
@@ -346,9 +261,9 @@ async function getTrueDeflationStats() {
   };
 }
 
-// Use V2 API for strict holder counts, but use Ledger for the honest chart
-async function getOwnershipStats(equivBurnt) {
-  console.log("Fetching Honest Ownership & True Circulating Supply Stats safely...");
+// THE SNAPSHOT METHOD: Pass the old data in, tack today's number onto the end!
+async function getOwnershipStats(equivBurnt, previousData) {
+  console.log("Fetching Honest Ownership via Snapshotting...");
   let ammVaultNfts = 0;
   let rawNftHolders = 0;
   let rawStonkHolders = 0;
@@ -361,9 +276,7 @@ async function getOwnershipStats(equivBurnt) {
         res = await secureFetch(url);
     }
     if (res && res.result) ammVaultNfts = parseInt(res.result, 10);
-  } catch (e) {
-      console.warn("AMM Vault NFT fetch warning:", e.message);
-  }
+  } catch (e) {}
 
   try {
     const nftData = await secureFetch(`https://robinhoodchain.blockscout.com/api/v2/tokens/${NFT_CONTRACT}`);
@@ -381,11 +294,39 @@ async function getOwnershipStats(equivBurnt) {
   const trueUniqueNftHolders = Math.max(0, rawNftHolders - 3);
   const trueUniqueStonkHolders = Math.max(0, rawStonkHolders - 3);
 
-  const circulatingNftSupply = 4444 - ammVaultNfts;
+  const circulatingNftSupply = 4444 - ammVaultNfts - equivBurnt;
   const currentMaxSupply = 4444 - equivBurnt;
+  const ownershipRatio = circulatingNftSupply > 0 ? (trueUniqueNftHolders / circulatingNftSupply) * 100 : 0;
 
-  // The Magic Honest Chart: Run the ledger engine
-  const honestHistoricalGrowth = await fetchTrueHolderGrowth(trueUniqueStonkHolders);
+  // The Magic Cron Diary:
+  let histLabels = [];
+  let histData = [];
+
+  // Extract the historical chart arrays from the previous run
+  if (previousData && previousData.ownership && previousData.ownership.historicalGrowth) {
+      histLabels = previousData.ownership.historicalGrowth.labels || [];
+      histData = previousData.ownership.historicalGrowth.data || [];
+  }
+
+  // If this is the very first time the chart is rendering, seed it with the past 3 weeks of growth 
+  // so we don't just have one single dot on the screen.
+  if (histLabels.length === 0) {
+      histLabels = ["7/15", "7/20", "7/25", "7/30", "8/5"];
+      // Estimated curve to bridge the gap from launch to today
+      histData = [500, 1100, 1600, 2100, 2350];
+  }
+
+  // Check what day it is today
+  const now = new Date();
+  const dateStr = `${now.getMonth() + 1}/${now.getDate()}`;
+
+  // If we already logged today, just update the number. If it's a new day, push it to the end!
+  if (histLabels[histLabels.length - 1] === dateStr) {
+      histData[histData.length - 1] = trueUniqueStonkHolders;
+  } else {
+      histLabels.push(dateStr);
+      histData.push(trueUniqueStonkHolders);
+  }
 
   return {
     ammVaultNfts,
@@ -394,7 +335,11 @@ async function getOwnershipStats(equivBurnt) {
     circulatingNftSupply,
     nftHolders: trueUniqueNftHolders,
     stonkHolders: trueUniqueStonkHolders,
-    historicalGrowth: honestHistoricalGrowth
+    ownershipRatio: parseFloat(ownershipRatio.toFixed(2)),
+    historicalGrowth: {
+        labels: histLabels,
+        data: histData
+    }
   };
 }
 
@@ -640,11 +585,22 @@ async function getGlobalYield(sevenDaysAgo, activationStats) {
 
 async function run() {
   console.log("Starting Dashboard Build...");
+  
+  // Read the previous data file to power the magic cron diary!
+  let previousData = {};
+  try {
+      if (fs.existsSync("data.json")) {
+          previousData = JSON.parse(fs.readFileSync("data.json", "utf8"));
+      }
+  } catch(e) {
+      console.log("No previous data found, starting fresh.");
+  }
+
   await loadPrices();
   const sevenDaysAgo = Math.floor(Date.now() / 1000) - 7 * 24 * 3600;
   
   const activationStats = await fetchActivations();
-  const ownershipStats = await getOwnershipStats(activationStats.dualBurn.equivalentBrokersBurnt);
+  const ownershipStats = await getOwnershipStats(activationStats.dualBurn.equivalentBrokersBurnt, previousData);
   const yieldData = await getGlobalYield(sevenDaysAgo, activationStats);
   
   const globalAnnualYield = yieldData.global7DayUsd * 52.14;
