@@ -47,6 +47,7 @@
         </div>
     </header>
 
+    <!-- NEW PHASE 3: Added Ownership Stats Tab -->
     <div class="max-w-6xl mx-auto flex flex-wrap gap-3 md:gap-4 mb-6">
         <button id="tab-roi" onclick="switchTab('roi')" class="flex-1 sm:flex-none justify-center bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition shadow-lg shadow-blue-500/25">
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 0h8v12H6V4zm2 2v2h4V6H8zm0 4v2h4v-2H8zm0 4v2h4v-2H8z"></path></svg>
@@ -59,6 +60,10 @@
         <button id="tab-activation" onclick="switchTab('activation')" class="flex-1 sm:flex-none justify-center bg-transparent border border-[#334155] hover:bg-[#1e293b] text-slate-300 px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition">
             <svg class="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
             Ecosystem Activation
+        </button>
+        <button id="tab-ownership" onclick="switchTab('ownership')" class="flex-1 sm:flex-none justify-center bg-transparent border border-[#334155] hover:bg-[#1e293b] text-slate-300 px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition">
+            <svg class="w-4 h-4 text-purple-400" fill="currentColor" viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"></path></svg>
+            Ownership Stats
         </button>
     </div>
 
@@ -207,6 +212,55 @@
         </div>
     </main>
 
+    <!-- NEW PHASE 3: Ownership Stats -->
+    <main id="view-ownership" class="max-w-6xl mx-auto card rounded-2xl border p-4 md:p-6 mb-8 shadow-xl hidden">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <div>
+                <h2 class="text-lg md:text-xl font-bold text-white flex items-center gap-2">
+                    <svg class="w-5 h-5 text-purple-400" fill="currentColor" viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"></path></svg>
+                    Protocol Ownership & Distribution
+                </h2>
+                <p class="text-xs md:text-sm text-slate-400 mt-1">Network transparency, true circulating supply, and wallet decentralization</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="bg-[#0f172a] border border-[#334155] rounded-xl p-5 shadow-inner">
+                <p class="text-xs uppercase tracking-wider text-slate-400 mb-1">True Circulating NFTs</p>
+                <p class="text-2xl md:text-3xl font-extrabold text-blue-400" id="stat-circ-supply">Loading...</p>
+                <p class="text-xs text-slate-500 mt-1">Total supply excluding AMM Vault & Burns</p>
+            </div>
+            <div class="bg-[#0f172a] border border-[#334155] rounded-xl p-5 shadow-inner">
+                <p class="text-xs uppercase tracking-wider text-slate-400 mb-1">AMM Vault Inventory</p>
+                <p class="text-2xl md:text-3xl font-extrabold text-slate-300" id="stat-amm-vault">Loading...</p>
+                <p class="text-xs text-slate-500 mt-1">Liquidity held in the Anvil AMM Pool</p>
+            </div>
+            <div class="bg-[#0f172a] border border-[#334155] rounded-xl p-5 shadow-inner">
+                <p class="text-xs uppercase tracking-wider text-slate-400 mb-1">Permanently Burnt</p>
+                <p class="text-2xl md:text-3xl font-extrabold text-orange-400" id="stat-burnt-nfts">Loading...</p>
+                <p class="text-xs text-slate-500 mt-1">Sent to the dead address</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="bg-[#1e293b] border border-[#334155] rounded-xl p-5 shadow-sm">
+                <p class="text-xs uppercase tracking-wider text-slate-400 mb-1">Unique NFT Holders</p>
+                <p class="text-2xl md:text-3xl font-extrabold text-purple-400" id="stat-nft-holders">Loading...</p>
+                <p class="text-xs text-slate-500 mt-1">Wallets holding at least 1 StonkBroker</p>
+            </div>
+            <div class="bg-[#1e293b] border border-[#334155] rounded-xl p-5 shadow-sm ring-1 ring-emerald-500/20">
+                <p class="text-xs uppercase tracking-wider text-slate-400 mb-1">Ownership Concentration</p>
+                <p class="text-2xl md:text-3xl font-extrabold text-emerald-400" id="stat-own-ratio">Loading...</p>
+                <p class="text-xs text-slate-500 mt-1">Unique humans / True Circulating Supply</p>
+            </div>
+            <div class="bg-[#1e293b] border border-[#334155] rounded-xl p-5 shadow-sm">
+                <p class="text-xs uppercase tracking-wider text-slate-400 mb-1">Unique $STONK Holders</p>
+                <p class="text-2xl md:text-3xl font-extrabold text-purple-400" id="stat-stonk-holders">Loading...</p>
+                <p class="text-xs text-slate-500 mt-1">Active addresses with a token balance</p>
+            </div>
+        </div>
+    </main>
+
     <div class="max-w-6xl mx-auto card rounded-xl p-5 md:p-6 border mb-12 shadow-lg">
         <div class="flex items-center gap-2 mb-4">
             <svg class="w-5 h-5 text-blue-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
@@ -238,14 +292,17 @@
             const btnRoi = document.getElementById('tab-roi');
             const btnBurn = document.getElementById('tab-burn');
             const btnActivation = document.getElementById('tab-activation');
+            const btnOwnership = document.getElementById('tab-ownership');
+            
             const viewRoi = document.getElementById('view-roi');
             const viewBurn = document.getElementById('view-burn');
             const viewActivation = document.getElementById('view-activation');
+            const viewOwnership = document.getElementById('view-ownership');
 
-            [btnRoi, btnBurn, btnActivation].forEach(b => {
+            [btnRoi, btnBurn, btnActivation, btnOwnership].forEach(b => {
                 b.className = "flex-1 sm:flex-none justify-center bg-transparent border border-[#334155] hover:bg-[#1e293b] text-slate-300 px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition";
             });
-            [viewRoi, viewBurn, viewActivation].forEach(v => v.classList.add('hidden'));
+            [viewRoi, viewBurn, viewActivation, viewOwnership].forEach(v => v.classList.add('hidden'));
 
             if (tab === 'roi') {
                 btnRoi.className = "flex-1 sm:flex-none justify-center bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition shadow-lg shadow-blue-500/25";
@@ -258,6 +315,9 @@
                 btnActivation.className = "flex-1 sm:flex-none justify-center bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition shadow-lg shadow-blue-500/25";
                 viewActivation.classList.remove('hidden');
                 if (window.activationChartData) renderActivationCharts(window.activationChartData);
+            } else if (tab === 'ownership') {
+                btnOwnership.className = "flex-1 sm:flex-none justify-center bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition shadow-lg shadow-blue-500/25";
+                viewOwnership.classList.remove('hidden');
             }
         }
 
@@ -297,14 +357,12 @@
                         roiHtml = `<span class="bg-emerald-900/20 text-emerald-400 border border-emerald-800/50 px-2.5 py-1 rounded text-sm font-bold shadow-sm opacity-50">0.00%</span>`;
                     }
 
-                    // Save tier specific 7-day data
                     window.tierChartData[t.tier] = {
                         labels: t.dailyDates,
                         data: t.dailyYields,
                         name: t.name
                     };
                     
-                    // Main Visible Row
                     const tr = document.createElement('tr');
                     tr.className = 'cursor-pointer border-b border-[#334155]/50 hover:bg-[#334155]/20 transition-colors duration-150 group';
                     tr.onclick = () => toggleTierDetails(t.tier);
@@ -327,7 +385,6 @@
                     `;
                     tbody.appendChild(tr);
 
-                    // Hidden Drawer Row
                     const detailsTr = document.createElement('tr');
                     detailsTr.id = `details-${t.tier}`;
                     detailsTr.className = 'hidden bg-[#0f172a]/40 border-b border-[#334155]/50';
@@ -353,7 +410,6 @@
             }
         }
 
-        // NEW PHASE 2: Tier Drawer Logic
         function toggleTierDetails(tierId) {
             const detailsRow = document.getElementById('details-' + tierId);
             const isHidden = detailsRow.classList.contains('hidden');
@@ -363,7 +419,6 @@
                 detailsRow.classList.remove('hidden');
                 if (chevron) chevron.style.transform = 'rotate(180deg)';
                 
-                // Initialize the sparkline chart on-demand the first time the drawer opens
                 if (!tierChartInstances[tierId]) {
                     const ctx = document.getElementById('chart-' + tierId).getContext('2d');
                     const cData = window.tierChartData[tierId];
@@ -402,6 +457,7 @@
 
         function processMetricsData(data) {
             const act = data.activation || {};
+            const own = data.ownership || {};
             const activeCount = act.activeCount || 0;
             let pctActivated = act.percentActivated || 0;
             const totalSupply = act.totalSupply || 4444;
@@ -419,6 +475,14 @@
             document.getElementById('stat-equiv-nfts').innerText = formatNumber(equivNfts, 2) + " Brokers";
             document.getElementById('stat-pct-activated').innerText = pctActivated.toFixed(2) + "%";
             document.getElementById('stat-active-count').innerText = formatNumber(activeCount) + " Units";
+
+            // Phase 3 Data Binding
+            document.getElementById('stat-circ-supply').innerText = formatNumber(own.circulatingNftSupply || 0) + ' Brokers';
+            document.getElementById('stat-amm-vault').innerText = formatNumber(own.ammVaultNfts || 0) + ' Brokers';
+            document.getElementById('stat-burnt-nfts').innerText = formatNumber(own.burntNfts || 0) + ' Brokers';
+            document.getElementById('stat-nft-holders').innerText = formatNumber(own.nftHolders || 0) + ' Wallets';
+            document.getElementById('stat-stonk-holders').innerText = formatNumber(own.stonkHolders || 0) + ' Wallets';
+            document.getElementById('stat-own-ratio').innerText = (own.ownershipRatio || 0).toFixed(2) + '%';
 
             const stats = act.stats || { '24h': {}, '7d': {}, '30d': {}, 'allTime': {} };
             document.getElementById('stat-act-24h').innerText = formatNumber(stats['24h'].activated || 0);
