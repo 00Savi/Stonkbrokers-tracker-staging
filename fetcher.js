@@ -261,14 +261,13 @@ async function getTrueDeflationStats() {
   };
 }
 
-// NEW PHASE 3: Ownership & Supply Metrics
+// SAFE PHASE 3: Protected secureFetch for Ownership Metrics
 async function getOwnershipStats(totalNftBurns) {
-  console.log("Fetching Ownership & True Circulating Supply Stats...");
+  console.log("Fetching Ownership & True Circulating Supply Stats safely...");
   let ammVaultNfts = 0;
   let rawNftHolders = 0;
   let rawStonkHolders = 0;
 
-  // 1. Fetch AMM Vault NFT Inventory
   try {
     let url = `${PRO_API}?chain_id=${CHAIN_ID}&module=account&action=tokenbalance&contractaddress=${NFT_CONTRACT}&address=${AMM_VAULT}&apikey=${API_KEY}`;
     let res = await secureFetch(url);
@@ -281,28 +280,24 @@ async function getOwnershipStats(totalNftBurns) {
       console.warn("AMM Vault NFT fetch warning:", e.message);
   }
 
-  // 2. Fetch Holders using Blockscout V2 API (Returns unique addresses dynamically)
+  // Use the protected secureFetch wrapper to prevent any hanging or silent timeouts
   try {
-    const nftRes = await fetch(`https://robinhoodchain.blockscout.com/api/v2/tokens/${NFT_CONTRACT}`, { headers: { "Accept": "application/json" } });
-    const nftData = await nftRes.json();
+    const nftData = await secureFetch(`https://robinhoodchain.blockscout.com/api/v2/tokens/${NFT_CONTRACT}`);
     if (nftData && nftData.holders) rawNftHolders = parseInt(nftData.holders, 10);
   } catch (e) {}
 
   try {
-    const stonkRes = await fetch(`https://robinhoodchain.blockscout.com/api/v2/tokens/${STONK_TOKEN_CONTRACT}`, { headers: { "Accept": "application/json" } });
-    const stonkData = await stonkRes.json();
+    const stonkData = await secureFetch(`https://robinhoodchain.blockscout.com/api/v2/tokens/${STONK_TOKEN_CONTRACT}`);
     if (stonkData && stonkData.holders) rawStonkHolders = parseInt(stonkData.holders, 10);
   } catch (e) {}
 
-  // Fallbacks if V2 API is blocked or offline
+  // Safe fallback minimums in case the V2 api is strictly rate limited
   if (rawNftHolders === 0) rawNftHolders = 1500; 
   if (rawStonkHolders === 0) rawStonkHolders = 2500;
 
-  // 3. Deduct system/vault wallets (0xdead, 0x0, AMM Vault) from unique holder counts for humans-only stat
   const trueUniqueNftHolders = Math.max(0, rawNftHolders - 3);
   const trueUniqueStonkHolders = Math.max(0, rawStonkHolders - 3);
 
-  // 4. Calculate True Circulating Supply & Ownership Ratio
   const circulatingNftSupply = 4444 - ammVaultNfts - totalNftBurns;
   const ownershipRatio = circulatingNftSupply > 0 ? (trueUniqueNftHolders / circulatingNftSupply) * 100 : 0;
 
