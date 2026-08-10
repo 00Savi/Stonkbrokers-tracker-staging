@@ -66,6 +66,7 @@
         </button>
     </div>
 
+    <!-- View 1: Tier ROI Benchmarks -->
     <main id="view-roi" class="max-w-6xl mx-auto card rounded-2xl border p-4 md:p-6 mb-8 shadow-xl overflow-hidden">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-8 gap-4">
             <div>
@@ -96,6 +97,7 @@
         </div>
     </main>
 
+    <!-- View 2: Burn Tracker -->
     <main id="view-burn" class="max-w-6xl mx-auto card rounded-2xl border p-4 md:p-6 mb-8 shadow-xl hidden">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div>
@@ -135,6 +137,7 @@
         </div>
     </main>
 
+    <!-- View 3: Ecosystem Activation -->
     <main id="view-activation" class="max-w-6xl mx-auto card rounded-2xl border p-4 md:p-6 mb-8 shadow-xl hidden">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div>
@@ -249,9 +252,8 @@
                 <p class="text-2xl md:text-3xl font-extrabold text-purple-400" id="stat-nft-holders">Loading...</p>
                 <p class="text-xs text-slate-500 mt-1">Wallets holding at least 1 StonkBroker</p>
             </div>
-            <!-- UPDATED: Replaced % with Absolute Unique Owners Format -->
-            <div class="bg-[#1e293b] border border-[#334155] rounded-xl p-5 shadow-sm ring-1 ring-emerald-500/20 flex flex-col items-center justify-center text-center">
-                <p class="text-xs uppercase tracking-wider text-slate-400 mb-1">Unique Owners</p>
+            <div class="bg-[#1e293b] border border-[#334155] rounded-xl p-5 shadow-sm ring-1 ring-emerald-500/20">
+                <p class="text-xs uppercase tracking-wider text-slate-400 mb-1">Ownership Concentration</p>
                 <p class="text-2xl md:text-3xl font-extrabold text-emerald-400" id="stat-own-ratio">Loading...</p>
                 <p class="text-xs text-slate-500 mt-1">Unique humans / True Circulating Supply</p>
             </div>
@@ -488,7 +490,6 @@
             document.getElementById('stat-pct-activated').innerText = pctActivated.toFixed(2) + "%";
             document.getElementById('stat-active-count').innerText = formatNumber(activeCount) + " Units";
 
-            // Phase 3 Data Binding
             document.getElementById('stat-max-supply').innerText = formatNumber(own.currentMaxSupply || 0, 2) + ' Brokers';
             document.getElementById('stat-circ-supply').innerText = formatNumber(own.circulatingNftSupply || 0) + ' Brokers';
             document.getElementById('stat-amm-vault').innerText = formatNumber(own.ammVaultNfts || 0) + ' Brokers';
@@ -496,8 +497,8 @@
             document.getElementById('stat-nft-holders').innerText = formatNumber(own.nftHolders || 0) + ' Wallets';
             document.getElementById('stat-stonk-holders').innerText = formatNumber(own.stonkHolders || 0) + ' Wallets';
             
-            // UPDATED: Displays formatted text string instead of percentage
-            document.getElementById('stat-own-ratio').innerText = formatNumber(own.nftHolders || 0) + ' / ' + formatNumber(own.circulatingNftSupply || 0);
+            // Reverted back to the True Percentage calculation for Ownership Concentration
+            document.getElementById('stat-own-ratio').innerText = (own.ownershipRatio || 0).toFixed(2) + '%';
 
             const stats = act.stats || { '24h': {}, '7d': {}, '30d': {}, 'allTime': {} };
             document.getElementById('stat-act-24h').innerText = formatNumber(stats['24h'].activated || 0);
@@ -674,7 +675,6 @@
             });
         }
 
-        // NEW PHASE 3: Honest Token Holder Chart rendering
         function renderOwnershipChart({ labels, data }) {
             const ctx = document.getElementById('ownershipChart').getContext('2d');
             if (ownershipChartInstance) ownershipChartInstance.destroy();
@@ -690,7 +690,7 @@
                         backgroundColor: 'rgba(168, 85, 247, 0.1)',
                         borderWidth: 3,
                         fill: true,
-                        stepped: true, // Gives that classic staircase growth look!
+                        stepped: true,
                         pointRadius: 0
                     }]
                 },
