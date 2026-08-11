@@ -1,385 +1,740 @@
 {
-  "market": {
-    "ethPriceUsd": 1876.64,
-    "tokenPriceUsd": 0.032,
-    "nftFloorEth": 12.505
-  },
-  "activation": {
-    "activeCount": 1,
-    "breakdown": {
-      "T0": 1,
-      "T1": 0,
-      "T2": 0,
-      "T3": 0,
-      "T4": 0
-    },
-    "percentActivated": 0.02,
-    "totalSupply": 4444,
-    "tierStats": {
-      "T0": {
-        "24h": {
-          "act": 0,
-          "deact": 0
+  "lastUpdated": "2026-08-11T01:18:07.547Z",
+  "projects": {
+    "stonk": {
+      "market": {
+        "ethPriceUsd": 1874,
+        "tokenPriceUsd": 0.03418,
+        "nftFloorEth": 13.375
+      },
+      "activation": {
+        "activeCount": 1729,
+        "breakdown": {
+          "T0": 1538,
+          "T1": 79,
+          "T2": 46,
+          "T3": 36,
+          "T4": 30
         },
-        "7d": {
-          "act": 0,
-          "deact": 0
+        "percentActivated": 38.91,
+        "totalSupply": 4444,
+        "tierStats": {
+          "T0": {
+            "24h": {
+              "act": 74,
+              "deact": 7
+            },
+            "7d": {
+              "act": 162,
+              "deact": 105
+            },
+            "30d": {
+              "act": 2178,
+              "deact": 640
+            },
+            "allTime": {
+              "act": 2178,
+              "deact": 640
+            }
+          },
+          "T1": {
+            "24h": {
+              "act": 1,
+              "deact": 0
+            },
+            "7d": {
+              "act": 6,
+              "deact": 5
+            },
+            "30d": {
+              "act": 112,
+              "deact": 33
+            },
+            "allTime": {
+              "act": 112,
+              "deact": 33
+            }
+          },
+          "T2": {
+            "24h": {
+              "act": 0,
+              "deact": 0
+            },
+            "7d": {
+              "act": 1,
+              "deact": 2
+            },
+            "30d": {
+              "act": 63,
+              "deact": 17
+            },
+            "allTime": {
+              "act": 63,
+              "deact": 17
+            }
+          },
+          "T3": {
+            "24h": {
+              "act": 0,
+              "deact": 0
+            },
+            "7d": {
+              "act": 8,
+              "deact": 1
+            },
+            "30d": {
+              "act": 42,
+              "deact": 6
+            },
+            "allTime": {
+              "act": 42,
+              "deact": 6
+            }
+          },
+          "T4": {
+            "24h": {
+              "act": 0,
+              "deact": 0
+            },
+            "7d": {
+              "act": 1,
+              "deact": 0
+            },
+            "30d": {
+              "act": 33,
+              "deact": 3
+            },
+            "allTime": {
+              "act": 33,
+              "deact": 3
+            }
+          }
         },
-        "30d": {
-          "act": 1,
-          "deact": 0
+        "history": {
+          "labels": [
+            "7/18",
+            "7/19",
+            "7/20",
+            "7/21",
+            "7/22",
+            "7/23",
+            "7/24",
+            "7/25",
+            "7/26",
+            "7/27",
+            "7/28",
+            "7/29",
+            "7/30",
+            "7/31",
+            "8/1",
+            "8/2",
+            "8/3",
+            "8/4",
+            "8/5",
+            "8/6",
+            "8/7",
+            "8/8",
+            "8/9",
+            "8/10",
+            "8/11"
+          ],
+          "dailyActivations": [
+            1373,
+            261,
+            176,
+            95,
+            50,
+            64,
+            25,
+            23,
+            24,
+            33,
+            14,
+            18,
+            13,
+            7,
+            22,
+            31,
+            19,
+            15,
+            25,
+            23,
+            12,
+            22,
+            7,
+            75,
+            1
+          ],
+          "dailyDeactivations": [
+            59,
+            161,
+            62,
+            39,
+            19,
+            21,
+            12,
+            16,
+            27,
+            38,
+            6,
+            34,
+            15,
+            7,
+            23,
+            30,
+            18,
+            12,
+            4,
+            14,
+            14,
+            38,
+            23,
+            8,
+            0
+          ],
+          "cumulative": [
+            1314,
+            1414,
+            1528,
+            1584,
+            1615,
+            1658,
+            1671,
+            1678,
+            1675,
+            1670,
+            1678,
+            1662,
+            1660,
+            1660,
+            1659,
+            1660,
+            1661,
+            1664,
+            1685,
+            1694,
+            1692,
+            1676,
+            1660,
+            1727,
+            1728
+          ],
+          "cumulativeGross": [
+            1373,
+            1634,
+            1810,
+            1905,
+            1955,
+            2019,
+            2044,
+            2067,
+            2091,
+            2124,
+            2138,
+            2156,
+            2169,
+            2176,
+            2198,
+            2229,
+            2248,
+            2263,
+            2288,
+            2311,
+            2323,
+            2345,
+            2352,
+            2427,
+            2428
+          ]
         },
-        "allTime": {
-          "act": 1,
-          "deact": 0
+        "dualBurn": {
+          "totalBurnTokens": 540952561,
+          "equivalentBrokersBurnt": 811.43
         }
       },
-      "T1": {
-        "24h": {
-          "act": 0,
-          "deact": 0
-        },
-        "7d": {
-          "act": 0,
-          "deact": 0
-        },
-        "30d": {
-          "act": 0,
-          "deact": 0
-        },
-        "allTime": {
-          "act": 0,
-          "deact": 0
+      "ownership": {
+        "ammVaultNfts": 2265,
+        "burntNfts": 811.43,
+        "currentMaxSupply": 3632.57,
+        "circulatingNftSupply": 2179,
+        "nftHolders": 620,
+        "stonkHolders": 19568,
+        "ownershipRatio": 28.45,
+        "historicalGrowth": {
+          "labels": [
+            "7/15",
+            "7/20",
+            "7/25",
+            "7/30",
+            "8/5",
+            "8/11"
+          ],
+          "data": [
+            4892,
+            10762,
+            14676,
+            17611,
+            19177,
+            19568
+          ]
         }
       },
-      "T2": {
-        "24h": {
-          "act": 0,
-          "deact": 0
+      "tiers": [
+        {
+          "tier": "T0",
+          "name": "Floor Trader",
+          "reqTokens": 66666,
+          "multiplier": "1.00x",
+          "weight": 100,
+          "trackedAnnualYieldUsd": 55.09850070890406,
+          "dailyDates": [
+            "8/4",
+            "8/5",
+            "8/6",
+            "8/7",
+            "8/8",
+            "8/9",
+            "8/10"
+          ],
+          "dailyYields": [
+            6.8284358955517055,
+            8.21392424059988,
+            15.697779693952329,
+            12.151185150456147,
+            40.47385924235134,
+            15.603395886497113,
+            16.072001071940146
+          ]
         },
-        "7d": {
-          "act": 0,
-          "deact": 0
+        {
+          "tier": "T1",
+          "name": "Analyst",
+          "reqTokens": 166666,
+          "multiplier": "1.25x",
+          "weight": 125,
+          "trackedAnnualYieldUsd": 68.87312588613008,
+          "dailyDates": [
+            "8/4",
+            "8/5",
+            "8/6",
+            "8/7",
+            "8/8",
+            "8/9",
+            "8/10"
+          ],
+          "dailyYields": [
+            8.535544869439633,
+            10.267405300749848,
+            19.622224617440413,
+            15.188981438070183,
+            50.592324052939176,
+            19.50424485812139,
+            20.090001339925184
+          ]
         },
-        "30d": {
-          "act": 0,
-          "deact": 0
+        {
+          "tier": "T2",
+          "name": "Portfolio Manager",
+          "reqTokens": 366666,
+          "multiplier": "1.60x",
+          "weight": 160,
+          "trackedAnnualYieldUsd": 88.1576011342465,
+          "dailyDates": [
+            "8/4",
+            "8/5",
+            "8/6",
+            "8/7",
+            "8/8",
+            "8/9",
+            "8/10"
+          ],
+          "dailyYields": [
+            10.925497432882729,
+            13.142278784959807,
+            25.116447510323727,
+            19.441896240729836,
+            64.75817478776214,
+            24.965433418395378,
+            25.715201715104236
+          ]
         },
-        "allTime": {
-          "act": 0,
-          "deact": 0
+        {
+          "tier": "T3",
+          "name": "Managing Director",
+          "reqTokens": 666666,
+          "multiplier": "2.00x",
+          "weight": 200,
+          "trackedAnnualYieldUsd": 110.19700141780812,
+          "dailyDates": [
+            "8/4",
+            "8/5",
+            "8/6",
+            "8/7",
+            "8/8",
+            "8/9",
+            "8/10"
+          ],
+          "dailyYields": [
+            13.656871791103411,
+            16.42784848119976,
+            31.395559387904658,
+            24.302370300912294,
+            80.94771848470268,
+            31.206791772994226,
+            32.14400214388029
+          ]
+        },
+        {
+          "tier": "T4",
+          "name": "Partner",
+          "reqTokens": 1666666,
+          "multiplier": "3.33x",
+          "weight": 333,
+          "trackedAnnualYieldUsd": 183.47800736065054,
+          "dailyDates": [
+            "8/4",
+            "8/5",
+            "8/6",
+            "8/7",
+            "8/8",
+            "8/9",
+            "8/10"
+          ],
+          "dailyYields": [
+            22.73869153218718,
+            27.3523677211976,
+            52.27360638086126,
+            40.46344655101897,
+            134.77795127702996,
+            51.95930830203538,
+            53.519763569560695
+          ]
         }
-      },
-      "T3": {
-        "24h": {
-          "act": 0,
-          "deact": 0
-        },
-        "7d": {
-          "act": 0,
-          "deact": 0
-        },
-        "30d": {
-          "act": 0,
-          "deact": 0
-        },
-        "allTime": {
-          "act": 0,
-          "deact": 0
-        }
-      },
-      "T4": {
-        "24h": {
-          "act": 0,
-          "deact": 0
-        },
-        "7d": {
-          "act": 0,
-          "deact": 0
-        },
-        "30d": {
-          "act": 0,
-          "deact": 0
-        },
-        "allTime": {
-          "act": 0,
-          "deact": 0
-        }
+      ],
+      "config": {
+        "ticker": "STONK",
+        "unitValue": 666666
       }
     },
-    "history": {
-      "labels": [
-        "7/17",
-        "7/18",
-        "7/19",
-        "7/20",
-        "7/21",
-        "7/22",
-        "7/23",
-        "7/24",
-        "7/25",
-        "7/26",
-        "7/27",
-        "7/28",
-        "7/29",
-        "7/30",
-        "7/31",
-        "8/1",
-        "8/2",
-        "8/3",
-        "8/4",
-        "8/5",
-        "8/6",
-        "8/7",
-        "8/8",
-        "8/9",
-        "8/10"
+    "mancer": {
+      "market": {
+        "ethPriceUsd": 1874,
+        "tokenPriceUsd": 0.004063,
+        "nftFloorEth": 1.192
+      },
+      "activation": {
+        "activeCount": 1217,
+        "breakdown": {
+          "T0": 895,
+          "T1": 138,
+          "T2": 77,
+          "T3": 61,
+          "T4": 46
+        },
+        "percentActivated": 24.34,
+        "totalSupply": 5000,
+        "tierStats": {
+          "T0": {
+            "24h": {
+              "act": 58,
+              "deact": 0
+            },
+            "7d": {
+              "act": 925,
+              "deact": 0
+            },
+            "30d": {
+              "act": 925,
+              "deact": 0
+            },
+            "allTime": {
+              "act": 925,
+              "deact": 0
+            }
+          },
+          "T1": {
+            "24h": {
+              "act": 11,
+              "deact": 0
+            },
+            "7d": {
+              "act": 140,
+              "deact": 0
+            },
+            "30d": {
+              "act": 140,
+              "deact": 0
+            },
+            "allTime": {
+              "act": 140,
+              "deact": 0
+            }
+          },
+          "T2": {
+            "24h": {
+              "act": 2,
+              "deact": 0
+            },
+            "7d": {
+              "act": 81,
+              "deact": 0
+            },
+            "30d": {
+              "act": 81,
+              "deact": 0
+            },
+            "allTime": {
+              "act": 81,
+              "deact": 0
+            }
+          },
+          "T3": {
+            "24h": {
+              "act": 1,
+              "deact": 0
+            },
+            "7d": {
+              "act": 62,
+              "deact": 0
+            },
+            "30d": {
+              "act": 62,
+              "deact": 0
+            },
+            "allTime": {
+              "act": 62,
+              "deact": 0
+            }
+          },
+          "T4": {
+            "24h": {
+              "act": 1,
+              "deact": 0
+            },
+            "7d": {
+              "act": 47,
+              "deact": 0
+            },
+            "30d": {
+              "act": 47,
+              "deact": 0
+            },
+            "allTime": {
+              "act": 47,
+              "deact": 0
+            }
+          }
+        },
+        "history": {
+          "labels": [
+            "8/6",
+            "8/7",
+            "8/8",
+            "8/9",
+            "8/10",
+            "8/11"
+          ],
+          "dailyActivations": [
+            0,
+            802,
+            273,
+            101,
+            73,
+            6
+          ],
+          "dailyDeactivations": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "cumulative": [
+            0,
+            802,
+            1075,
+            1176,
+            1249,
+            1255
+          ],
+          "cumulativeGross": [
+            0,
+            802,
+            1075,
+            1176,
+            1249,
+            1255
+          ]
+        },
+        "dualBurn": {
+          "totalBurnTokens": 343555281,
+          "equivalentBrokersBurnt": 687.11
+        }
+      },
+      "ownership": {
+        "ammVaultNfts": 2316,
+        "burntNfts": 687.11,
+        "currentMaxSupply": 4312.89,
+        "circulatingNftSupply": 2684,
+        "nftHolders": 1103,
+        "stonkHolders": 4533,
+        "ownershipRatio": 41.1,
+        "historicalGrowth": {
+          "labels": [
+            "7/15",
+            "7/20",
+            "7/25",
+            "7/30",
+            "8/5",
+            "8/11"
+          ],
+          "data": [
+            1133,
+            2493,
+            3400,
+            4080,
+            4442,
+            4533
+          ]
+        }
+      },
+      "tiers": [
+        {
+          "tier": "T0",
+          "name": "Apprentice",
+          "reqTokens": 50000,
+          "multiplier": "1.00x",
+          "weight": 100,
+          "trackedAnnualYieldUsd": 1258.6980219121363,
+          "dailyDates": [
+            "8/4",
+            "8/5",
+            "8/6",
+            "8/7",
+            "8/8",
+            "8/9",
+            "8/10"
+          ],
+          "dailyYields": [
+            0,
+            0,
+            0.0682458792913126,
+            3.6061777022410717,
+            5.969177881426795,
+            6.575351339979122,
+            7.921784096028663
+          ]
+        },
+        {
+          "tier": "T1",
+          "name": "Mage",
+          "reqTokens": 110000,
+          "multiplier": "1.25x",
+          "weight": 125,
+          "trackedAnnualYieldUsd": 1573.3725273901703,
+          "dailyDates": [
+            "8/4",
+            "8/5",
+            "8/6",
+            "8/7",
+            "8/8",
+            "8/9",
+            "8/10"
+          ],
+          "dailyYields": [
+            0,
+            0,
+            0.08530734911414074,
+            4.5077221278013395,
+            7.4614723517834936,
+            8.219189174973902,
+            9.902230120035828
+          ]
+        },
+        {
+          "tier": "T2",
+          "name": "Wizard",
+          "reqTokens": 225000,
+          "multiplier": "1.60x",
+          "weight": 160,
+          "trackedAnnualYieldUsd": 2013.9168350594177,
+          "dailyDates": [
+            "8/4",
+            "8/5",
+            "8/6",
+            "8/7",
+            "8/8",
+            "8/9",
+            "8/10"
+          ],
+          "dailyYields": [
+            0,
+            0,
+            0.10919340686610016,
+            5.769884323585714,
+            9.550684610282872,
+            10.520562143966593,
+            12.67485455364586
+          ]
+        },
+        {
+          "tier": "T3",
+          "name": "Elder",
+          "reqTokens": 450000,
+          "multiplier": "2.00x",
+          "weight": 200,
+          "trackedAnnualYieldUsd": 2517.3960438242725,
+          "dailyDates": [
+            "8/4",
+            "8/5",
+            "8/6",
+            "8/7",
+            "8/8",
+            "8/9",
+            "8/10"
+          ],
+          "dailyYields": [
+            0,
+            0,
+            0.1364917585826252,
+            7.212355404482143,
+            11.93835576285359,
+            13.150702679958243,
+            15.843568192057326
+          ]
+        },
+        {
+          "tier": "T4",
+          "name": "Grand Mancer",
+          "reqTokens": 1200000,
+          "multiplier": "3.33x",
+          "weight": 333,
+          "trackedAnnualYieldUsd": 4191.464412967413,
+          "dailyDates": [
+            "8/4",
+            "8/5",
+            "8/6",
+            "8/7",
+            "8/8",
+            "8/9",
+            "8/10"
+          ],
+          "dailyYields": [
+            0,
+            0,
+            0.22725877804007094,
+            12.008571748462769,
+            19.877362345151226,
+            21.895919962130474,
+            26.379541039775447
+          ]
+        }
       ],
-      "dailyActivations": [
-        0,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      "dailyDeactivations": [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      "cumulative": [
-        0,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1
-      ]
-    },
-    "dualBurn": {
-      "totalBurnTokens": 533790000,
-      "equivalentBrokersBurnt": 800.69
+      "config": {
+        "ticker": "MANCER",
+        "unitValue": 500000
+      }
     }
-  },
-  "ownership": {
-    "ammVaultNfts": null,
-    "burntNfts": 800.69,
-    "currentMaxSupply": 3643.31,
-    "circulatingNftSupply": null,
-    "nftHolders": 0,
-    "stonkHolders": 0,
-    "ownershipRatio": 0,
-    "historicalGrowth": {
-      "labels": [
-        "7/15",
-        "7/20",
-        "7/25",
-        "7/30",
-        "8/5",
-        "8/10"
-      ],
-      "data": [
-        5500,
-        12100,
-        16500,
-        19800,
-        21560,
-        0
-      ]
-    }
-  },
-  "tiers": [
-    {
-      "tier": "T0",
-      "name": "Floor Trader",
-      "reqTokens": 66666,
-      "multiplier": "1.00x",
-      "weight": 100,
-      "trackedAnnualYieldUsd": 0,
-      "dailyDates": [
-        "8/3",
-        "8/4",
-        "8/5",
-        "8/6",
-        "8/7",
-        "8/8",
-        "8/9"
-      ],
-      "dailyYields": [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "tier": "T1",
-      "name": "Analyst",
-      "reqTokens": 166666,
-      "multiplier": "1.25x",
-      "weight": 125,
-      "trackedAnnualYieldUsd": 0,
-      "dailyDates": [
-        "8/3",
-        "8/4",
-        "8/5",
-        "8/6",
-        "8/7",
-        "8/8",
-        "8/9"
-      ],
-      "dailyYields": [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "tier": "T2",
-      "name": "Portfolio Manager",
-      "reqTokens": 366666,
-      "multiplier": "1.60x",
-      "weight": 160,
-      "trackedAnnualYieldUsd": 0,
-      "dailyDates": [
-        "8/3",
-        "8/4",
-        "8/5",
-        "8/6",
-        "8/7",
-        "8/8",
-        "8/9"
-      ],
-      "dailyYields": [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "tier": "T3",
-      "name": "Managing Director",
-      "reqTokens": 666666,
-      "multiplier": "2.00x",
-      "weight": 200,
-      "trackedAnnualYieldUsd": 0,
-      "dailyDates": [
-        "8/3",
-        "8/4",
-        "8/5",
-        "8/6",
-        "8/7",
-        "8/8",
-        "8/9"
-      ],
-      "dailyYields": [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "tier": "T4",
-      "name": "Partner",
-      "reqTokens": 1666666,
-      "multiplier": "3.33x",
-      "weight": 333,
-      "trackedAnnualYieldUsd": 0,
-      "dailyDates": [
-        "8/3",
-        "8/4",
-        "8/5",
-        "8/6",
-        "8/7",
-        "8/8",
-        "8/9"
-      ],
-      "dailyYields": [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0
-      ]
-    }
-  ],
-  "lastUpdated": "2026-08-10T20:18:17.788Z"
+  }
 }
