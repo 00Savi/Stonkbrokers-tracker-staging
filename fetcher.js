@@ -3,10 +3,41 @@ const { ethers } = require("ethers");
 
 const API_KEY = "proapi_tI5cQZoWvXXgS1WFHXEaLKhLBSl0WHvcYv3msh7Kdpioyod8Bfon9vSHif7zhcAG_dLDzYW";
 const PRO_API = "https://api.blockscout.com/v2/api";
-const DIRECT_API = "https://robinhoodchain.blockscout.com/api"; 
 const CHAIN_ID = 4663;
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+const TOKEN_TICKERS = {
+  "0x0bd7d308f8e1639fab988df18a8011f41eacad73": null,      
+  "0xe934e36a439c94017b64a3fece66af12099abf50": "STONK", 
+  "0xaf3d76f1834a1d425780943c99ea8a608f8a93f9": "AAPL",
+  "0x12f190a9f9d7d37a250758b26824b97ce941bf54": "AMZN",
+  "0xd0601ce157db5bdc3162bbac2a2c8af5320d9eec": "NVDA",
+  "0x411efb0e7f985935daec3d4c3ebaea0d0ad7d89f": "SLV",
+  "0xe93237c50d904957cf27e7b1133b510c669c2e74": "MSFT",
+  "0x4ea005168d7f09a7a0ba9d1def21a479950e44c2": "COST",
+  "0xd917b029c761d264c6a312bbbcda868658ef86a6": "USAR",
+  "0x4a0e65a3eccec6dbe60ae065f2e7bb85fae35eea": "SPCX",
+  "0x2e0847e8910a9732eb3fb1bb4b70a580adad4fe3": "GOOGL",
+  "0x05b37fb53a299a1b874a619e1c4c404d52c36f4c": "RDDT",
+  "0x1b0e319c6a659f002271b69db8a7df2f911c153e": "GME",
+  "0xa30fa36db767ad9ed3f7a60fc79526fb4d56d344": "USO",
+  "0x5fc5360d0400a0fd4f2af552add042d716f1d168": null,      
+  "0x1383b43aed527485f191b60060f5b5471f71b1ca": null,
+  "0xc72f232a6869e6cf34dc06129affd07f8a2a246a": "DEX", 
+  "0xf33b89c958b12b0c8be77c6d65a59e3130031558": "DEX", 
+  "0xd7fcd16a55742bcce96c90484551b077d715195f": "DEX", 
+  "0x5d111f5083c89589009d1d64eadd84dc615836b4": "DEX", 
+  "0x020bfc650a365f8bb26819deaabf3e21291018b4": "DEX", 
+  "0x6245e67affa44a23077f0ea7f981a8dc743a0c47": "DEX", 
+  "0x27efeae1817d90974623cb2ed455c424beffa5ab": "DEX"  
+};
+
+const FALLBACK_STOCK_PRICES = {
+  "AAPL": 220, "AMZN": 180, "NVDA": 120, "SLV": 27, "MSFT": 420,
+  "COST": 850, "USAR": 25, "SPCX": 30, "GOOGL": 165, "RDDT": 60,
+  "GME": 20, "USO": 75
+};
 
 const PROJECTS = {
   stonk: {
@@ -18,6 +49,7 @@ const PROJECTS = {
     maxSupply: 4444,
     unitValue: 666666,
     ticker: "STONK",
+    logo: "Stonkbroker.png",
     yieldMode: "oracle_wallet",
     oracleSource: "0xe7207caa913b54aa4411e847a3a49eee0568cccf",
     oracleWeight: 333,
@@ -38,6 +70,7 @@ const PROJECTS = {
     maxSupply: 5000,
     unitValue: 500000,
     ticker: "MANCER",
+    logo: "logo.png",
     yieldMode: "protocol_vault",
     oracleSource: "0x47c2194cAacfC778c0Baa41E10008bb7D720Cd59".toLowerCase(), 
     tiers: [
@@ -66,6 +99,7 @@ const ACTIVATION_ABI = [
 const iface = new ethers.Interface(ACTIVATION_ABI);
 
 let ethPriceUsd = 1917;
+let tokenPrices = {};
 
 async function secureFetch(url) {
   const headers = { "Accept": "application/json" };
@@ -88,11 +122,13 @@ async function secureFetch(url) {
   process.exit(1); 
 }
 
-async function fetchTokenHoldersSafe(contractAddress) {
+// Re-engineered to directly query Blockscout for exact holder ledger, replacing clunky log scraping
+async function fetchTokenHoldersSafe(contractAddress, isNft = false) {
   let page = 1;
   let activeHolders = 0;
   let hasData = false;
-  const dustThreshold = 1000000000000000000n; 
+  // NFT needs >0 threshold. ERC20 needs 1 full token threshold (1e18) to filter dust.
+  const dustThreshold = isNft ? 1n : 1000000000000000000n; 
 
   while (true) {
     let url = `${PRO_API}?chain_id=${CHAIN_ID}&module=token&action=getTokenHolders&contractaddress=${contractAddress}&page=${page}&offset=1000&apikey=${API_KEY}`;
@@ -135,8 +171,39 @@ async function loadMarketPrices() {
         }
       } catch {}
       markets[key].nftFloorEth = +((conf.unitValue * markets[key].tokenPriceUsd * 1.10) / ethPriceUsd).toFixed(3);
+      tokenPrices[conf.tokenCa.toLowerCase()] = markets[key].tokenPriceUsd;
       await sleep(250);
   }
+
+  for (const [addr, ticker] of Object.entries(TOKEN_TICKERS)) {
+    if (!ticker) {
+      if (addr.includes("5fc5360d") || addr.includes("1383b43a")) tokenPrices[addr] = 1.0;
+      continue;
+    }
+    if (tokenPrices[addr]) continue;
+
+    if (ticker === "DEX") {
+      try {
+        const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${addr}`);
+        const d = await res.json();
+        if (d?.pairs?.length) {
+          const best = d.pairs.sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0))[0];
+          tokenPrices[addr] = parseFloat(best.priceUsd);
+        }
+      } catch {}
+      await sleep(150);
+      continue;
+    }
+
+    try {
+      const res = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`);
+      const d = await res.json();
+      const p = d?.chart?.result?.[0]?.meta?.regularMarketPrice;
+      if (p) tokenPrices[addr] = p; else tokenPrices[addr] = FALLBACK_STOCK_PRICES[ticker] || 100;
+    } catch { tokenPrices[addr] = FALLBACK_STOCK_PRICES[ticker] || 100; }
+    await sleep(150);
+  }
+
   return markets;
 }
 
@@ -185,29 +252,9 @@ async function fetchAllLogs(address, genesisBlock, topic0 = null) {
   return uniqueLogs;
 }
 
-async function getExactNftHolders(nftCa, genesis) {
-  const TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
-  const logs = await fetchAllLogs(nftCa, genesis, TRANSFER_TOPIC);
-
-  const balances = new Map();
-  for (const log of logs) {
-      const from = log.topics[1] ? "0x" + log.topics[1].slice(-40).toLowerCase() : null;
-      const to = log.topics[2] ? "0x" + log.topics[2].slice(-40).toLowerCase() : null;
-      if (from && from !== "0x0000000000000000000000000000000000000000") balances.set(from, (balances.get(from) || 0) - 1);
-      if (to && to !== "0x0000000000000000000000000000000000000000") balances.set(to, (balances.get(to) || 0) + 1);
-  }
-
-  let activeHolders = 0;
-  for (const [addr, bal] of balances.entries()) {
-      if (bal > 0 && !addr.includes("dead") && addr !== "0x0000000000000000000000000000000000000000") activeHolders++;
-  }
-  return activeHolders;
-}
-
 async function getTrueDeflationStats(conf) {
   let currentSupply = conf.maxSupply * conf.unitValue;
   let deadBalance = 0;
-  let lockedBalance = 0;
 
   try {
     const supplyUrl = `${PRO_API}?chain_id=${CHAIN_ID}&module=stats&action=tokensupply&contractaddress=${conf.tokenCa}&apikey=${API_KEY}`;
@@ -222,12 +269,17 @@ async function getTrueDeflationStats(conf) {
     await sleep(200); 
   }
 
-  let res = await secureFetch(`${PRO_API}?chain_id=${CHAIN_ID}&module=account&action=tokenbalance&contractaddress=${conf.tokenCa}&address=${conf.activationCa}&apikey=${API_KEY}`);
-  if (res && res.result) lockedBalance += Number(res.result) / 1e18;
-
-  const totalPossible = conf.maxSupply * conf.unitValue;
-  const nativeBurn = Math.max(0, totalPossible - currentSupply);
-  let totalBurnTokens = nativeBurn + deadBalance + lockedBalance;
+  let totalBurnTokens = 0;
+  if (conf.ticker === "STONK") {
+    let lockedBalance = 0;
+    let res = await secureFetch(`${PRO_API}?chain_id=${CHAIN_ID}&module=account&action=tokenbalance&contractaddress=${conf.tokenCa}&address=${conf.activationCa}&apikey=${API_KEY}`);
+    if (res && res.result) lockedBalance += Number(res.result) / 1e18;
+    const nativeBurn = Math.max(0, (conf.maxSupply * conf.unitValue) - currentSupply);
+    totalBurnTokens = nativeBurn + deadBalance + lockedBalance;
+  } else {
+    const nativeBurn = Math.max(0, (conf.maxSupply * conf.unitValue) - currentSupply);
+    totalBurnTokens = nativeBurn + deadBalance;
+  }
   
   const equivalentBrokersBurnt = totalBurnTokens / conf.unitValue;
 
@@ -239,12 +291,15 @@ async function getOwnershipStats(conf, equivBurnt, previousData) {
   let res = await secureFetch(`${PRO_API}?chain_id=${CHAIN_ID}&module=account&action=tokenbalance&contractaddress=${conf.nftCa}&address=${conf.ammCa}&apikey=${API_KEY}`);
   if (res && res.result) ammVaultNfts = parseInt(res.result, 10);
 
-  let trueUniqueNftHolders = await getExactNftHolders(conf.nftCa, conf.genesisBlock);
-  if (trueUniqueNftHolders > 3 && conf.ticker === "STONK") trueUniqueNftHolders -= 3; 
-  if (trueUniqueNftHolders > 2 && conf.ticker === "MANCER") trueUniqueNftHolders -= 2; 
+  let rawNftHolders = await fetchTokenHoldersSafe(conf.nftCa, true);
+  let trueUniqueNftHolders = rawNftHolders > 0 ? rawNftHolders : 0;
+  
+  // Exclude AMM Vault and Dead Addresses
+  if (conf.ticker === "STONK" && trueUniqueNftHolders > 3) trueUniqueNftHolders -= 3; 
+  if (conf.ticker === "MANCER" && trueUniqueNftHolders > 2) trueUniqueNftHolders -= 2; 
 
-  const rawTokenHolders = await fetchTokenHoldersSafe(conf.tokenCa);
-  const trueUniqueStonkHolders = rawTokenHolders > 3 ? rawTokenHolders - 3 : 0;
+  const rawStonkHolders = await fetchTokenHoldersSafe(conf.tokenCa, false);
+  const trueUniqueStonkHolders = rawStonkHolders > 3 ? rawStonkHolders - 3 : 0;
 
   const circulatingNftSupply = conf.maxSupply - ammVaultNfts; 
   const currentMaxSupply = conf.maxSupply - equivBurnt;
@@ -375,31 +430,82 @@ async function getGlobalYield(conf, sevenDaysAgo, activationStats, marketData) {
   let totalSampleUsd = 0;
 
   if (conf.yieldMode === "oracle_wallet") {
-      let page = 1;
+      const dailyEth = [0, 0, 0, 0, 0, 0, 0];
+      const dailyErc20 = [0, 0, 0, 0, 0, 0, 0];
+
+      let pageEth = 1;
       while(true) {
-          let url = `${PRO_API}?chain_id=${CHAIN_ID}&module=account&action=txlistinternal&address=${conf.oracleSource}&page=${page}&offset=1000&sort=desc&apikey=${API_KEY}`;
-          let dataEth = await secureFetch(url);
+          let urlEth = `${PRO_API}?chain_id=${CHAIN_ID}&module=account&action=txlistinternal&address=${conf.oracleSource}&page=${pageEth}&offset=1000&sort=desc&apikey=${API_KEY}`;
+          let dataEth = await secureFetch(urlEth);
           const txs = (dataEth && Array.isArray(dataEth.result)) ? dataEth.result : [];
           if(txs.length === 0) break;
           let reachedOlder = false;
           for (const tx of txs) {
             const ts = parseInt(tx.timeStamp || tx.timestamp || 0, 10);
             if (ts < sevenDaysAgo) { reachedOlder = true; continue; }
+            if (tx.isError === "1" || tx.isError === 1) continue;
+            
             const fromAddr = (tx.from || "").toLowerCase();
-            if (PROTOCOL_CONTRACTS.includes(fromAddr)) {
+            const toAddr = (tx.to || "").toLowerCase();
+            
+            if (PROTOCOL_CONTRACTS.includes(fromAddr) && toAddr === conf.oracleSource.toLowerCase()) {
               const eth = Number(tx.value || 0) / 1e18;
               if (eth > 0) {
                   const dayIdx = Math.max(0, Math.min(6, Math.floor((ts - sevenDaysAgo) / oneDay)));
-                  const usdVal = eth * ethPriceUsd;
-                  dailyUsdPerWeight[dayIdx] += (usdVal / conf.oracleWeight);
-                  totalSampleUsd += usdVal;
+                  dailyEth[dayIdx] += eth;
               }
             }
           }
           if(reachedOlder || txs.length < 1000) break;
-          page++; await sleep(200); 
+          pageEth++; await sleep(200); 
       }
-      return { global7DayUsd: (totalSampleUsd / conf.oracleWeight) * Object.values(activationStats.breakdown).reduce((a,b)=>a+b,0), dailyDates, dailyUsdPerWeight };
+
+      for (const tokenAddr of Object.keys(TOKEN_TICKERS)) {
+        const price = tokenPrices[tokenAddr.toLowerCase()] || 0;
+        if (price <= 0) continue;
+        
+        let pageTok = 1;
+        while(true) {
+            let urlTok = `${PRO_API}?chain_id=${CHAIN_ID}&module=account&action=tokentx&address=${conf.oracleSource}&contractaddress=${tokenAddr}&page=${pageTok}&offset=1000&sort=desc&apikey=${API_KEY}`;
+            let dataTok = await secureFetch(urlTok);
+            const txs = (dataTok && Array.isArray(dataTok.result)) ? dataTok.result : [];
+            if(txs.length === 0) break;
+
+            let reachedOlder = false;
+            for (const tx of txs) {
+              const ts = parseInt(tx.timeStamp || tx.timestamp || 0, 10);
+              if (ts < sevenDaysAgo) { reachedOlder = true; continue; }
+              if (tx.isError === "1" || tx.isError === 1) continue;
+              
+              const fromAddr = (tx.from || "").toLowerCase();
+              const toAddr = (tx.to || "").toLowerCase();
+              if (PROTOCOL_CONTRACTS.includes(fromAddr) && toAddr === conf.oracleSource.toLowerCase()) {
+                const amount = Number(tx.value || 0) / Math.pow(10, parseInt(tx.tokenDecimal || 18, 10));
+                if (amount > 0) {
+                    const usdVal = amount * price;
+                    const dayIdx = Math.max(0, Math.min(6, Math.floor((ts - sevenDaysAgo) / oneDay)));
+                    dailyErc20[dayIdx] += usdVal;
+                }
+              }
+            }
+            if(reachedOlder || txs.length < 1000) break;
+            pageTok++; await sleep(200); 
+        }
+      }
+
+      for (let i = 0; i < 7; i++) {
+        const dayUsd = (dailyEth[i] * ethPriceUsd) + dailyErc20[i];
+        totalSampleUsd += dayUsd;
+        dailyUsdPerWeight[i] = dayUsd / conf.oracleWeight;
+      }
+
+      let totalNetworkWeight = 0;
+      for (const t of conf.tiers) totalNetworkWeight += ((activationStats.breakdown[t.id] || 0) * t.weight);
+
+      const usdPerWeightUnit = totalSampleUsd / conf.oracleWeight;
+      const global7DayUsd = usdPerWeightUnit * totalNetworkWeight;
+
+      return { global7DayUsd, dailyDates, dailyUsdPerWeight };
   } 
   
   if (conf.yieldMode === "protocol_vault") {
@@ -478,7 +584,7 @@ async function run() {
         activation: activationStats,
         ownership: ownershipStats,
         tiers: mappedTiers,
-        config: { ticker: conf.ticker, unitValue: conf.unitValue }
+        config: { ticker: conf.ticker, unitValue: conf.unitValue, logo: conf.logo }
       };
   }
 
