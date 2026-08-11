@@ -13,9 +13,6 @@
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
-        
-        .dropdown-menu { display: none; }
-        .dropdown-container:hover .dropdown-menu { display: block; }
     </style>
 </head>
 <body class="p-4 md:p-8 font-sans antialiased overflow-x-hidden">
@@ -23,18 +20,17 @@
     <header class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-8 gap-4 md:gap-6">
         <div class="flex items-center gap-3 md:gap-4 w-full md:w-auto z-50">
             <div class="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 bg-[#1e293b] border border-[#334155] rounded-xl overflow-hidden flex items-center justify-center shadow-sm">
-                <img id="header-logo" src="logo.png" alt="PFP" class="w-full h-full object-cover">
+                <img id="header-logo" src="Stonkbroker.png" alt="PFP" class="w-full h-full object-cover">
             </div>
             
-            <div class="relative dropdown-container">
-                <button class="flex items-center gap-2 md:gap-3 text-xl md:text-2xl font-bold text-white hover:text-blue-400 transition cursor-pointer">
-                    <span id="project-title">StonkBrokers Tracker</span>
-                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-                <p class="text-xs md:text-sm text-slate-400 mt-0.5">Community Fan Project • Not affiliated</p>
+            <div class="relative group inline-block">
+                <!-- Added solid padding around the button to bridge the hover gap perfectly -->
+                <div class="py-2 cursor-pointer flex items-center gap-2 md:gap-3">
+                    <span id="project-title" class="text-xl md:text-2xl font-bold text-white group-hover:text-blue-400 transition">StonkBrokers Tracker</span>
+                    <svg class="w-5 h-5 text-slate-400 group-hover:text-blue-400 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
                 
-                <!-- Multi-Project Dropdown -->
-                <div class="dropdown-menu absolute left-0 mt-2 w-56 bg-[#1e293b] border border-[#334155] rounded-xl shadow-2xl py-2 z-50">
+                <div class="absolute left-0 top-[85%] mt-1 w-56 bg-[#1e293b] border border-[#334155] rounded-xl shadow-2xl py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                     <div onclick="loadProject('stonk')" class="px-4 py-2 hover:bg-[#334155] cursor-pointer flex items-center gap-3 text-white font-semibold transition">
                         <div class="w-2 h-2 rounded-full bg-blue-500"></div> StonkBrokers
                     </div>
@@ -68,22 +64,30 @@
         </div>
     </header>
 
-    <div class="max-w-6xl mx-auto flex flex-wrap gap-3 md:gap-4 mb-6">
-        <button id="tab-roi" onclick="switchTab('roi')" class="flex-1 sm:flex-none justify-center bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition shadow-lg shadow-blue-500/25">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 0h8v12H6V4zm2 2v2h4V6H8zm0 4v2h4v-2H8zm0 4v2h4v-2H8z"></path></svg>
-            Tier ROI Benchmarks
-        </button>
-        <button id="tab-burn" onclick="switchTab('burn')" class="flex-1 sm:flex-none justify-center bg-transparent border border-[#334155] hover:bg-[#1e293b] text-slate-300 px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition">
-            <svg class="w-4 h-4 text-orange-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.603 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654a1 1 0 00-1.788-.606 6.989 6.989 0 00-1.892 4.885 7 7 0 0012.38 4.352 1 1 0 00-1.03-1.594 5 5 0 01-8.35-3.08c0-1.127.243-2.046.688-2.73a5.617 5.617 0 011.082-1.226c.46-.388.94-.74 1.425-1.054.48-.31.964-.595 1.442-.861a1 1 0 00.385-1.45z" clip-rule="evenodd"></path></svg>
-            Burn Tracker
-        </button>
-        <button id="tab-activation" onclick="switchTab('activation')" class="flex-1 sm:flex-none justify-center bg-transparent border border-[#334155] hover:bg-[#1e293b] text-slate-300 px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition">
-            <svg class="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
-            Ecosystem Activation
-        </button>
-        <button id="tab-ownership" onclick="switchTab('ownership')" class="flex-1 sm:flex-none justify-center bg-transparent border border-[#334155] hover:bg-[#1e293b] text-slate-300 px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition">
-            <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"></path></svg>
-            Ownership Stats
+    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <div class="flex flex-wrap gap-3 md:gap-4 w-full sm:w-auto">
+            <button id="tab-roi" onclick="switchTab('roi')" class="flex-1 sm:flex-none justify-center bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition shadow-lg shadow-blue-500/25">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 0h8v12H6V4zm2 2v2h4V6H8zm0 4v2h4v-2H8zm0 4v2h4v-2H8z"></path></svg>
+                Tier ROI Benchmarks
+            </button>
+            <button id="tab-burn" onclick="switchTab('burn')" class="flex-1 sm:flex-none justify-center bg-transparent border border-[#334155] hover:bg-[#1e293b] text-slate-300 px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition">
+                <svg class="w-4 h-4 text-orange-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.603 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654a1 1 0 00-1.788-.606 6.989 6.989 0 00-1.892 4.885 7 7 0 0012.38 4.352 1 1 0 00-1.03-1.594 5 5 0 01-8.35-3.08c0-1.127.243-2.046.688-2.73a5.617 5.617 0 011.082-1.226c.46-.388.94-.74 1.425-1.054.48-.31.964-.595 1.442-.861a1 1 0 00.385-1.45z" clip-rule="evenodd"></path></svg>
+                Burn Tracker
+            </button>
+            <button id="tab-activation" onclick="switchTab('activation')" class="flex-1 sm:flex-none justify-center bg-transparent border border-[#334155] hover:bg-[#1e293b] text-slate-300 px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition">
+                <svg class="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
+                Ecosystem Activation
+            </button>
+            <button id="tab-ownership" onclick="switchTab('ownership')" class="flex-1 sm:flex-none justify-center bg-transparent border border-[#334155] hover:bg-[#1e293b] text-slate-300 px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition">
+                <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"></path></svg>
+                Ownership Stats
+            </button>
+        </div>
+        
+        <!-- Feature Request: Share to X Button -->
+        <button onclick="shareToX()" class="flex-1 sm:flex-none w-full sm:w-auto justify-center bg-black hover:bg-[#1da1f2] border border-[#334155] text-white px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 transition shadow-sm group">
+            <svg class="w-4 h-4 fill-current text-white" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 24.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            Share Stats
         </button>
     </div>
 
@@ -361,6 +365,14 @@
         const formatCurrency = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
         const formatNumber = (val, decimals = 0) => new Intl.NumberFormat('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(val);
         
+        function formatPrice(val) {
+            if (!val || val === 0) return "$0.00";
+            if (val < 0.01) {
+                return "$" + val.toFixed(6);
+            }
+            return formatCurrency(val);
+        }
+
         let burnChartInstance = null;
         let activationChartInstance = null;
         let tierPieChartInstance = null;
@@ -437,6 +449,7 @@
             const m = data.market;
             const conf = data.config;
             
+            document.getElementById('header-logo').src = conf.logo || 'logo.png';
             document.getElementById('project-title').innerText = projectKey === 'stonk' ? 'StonkBrokers Tracker' : 'Mancer Tracker';
             document.getElementById('dynamic-ticker-label').innerText = `$${conf.ticker}`;
             document.getElementById('dynamic-burn-label').innerText = `Total $${conf.ticker} Burnt`;
@@ -444,7 +457,7 @@
             document.getElementById('dynamic-holder-label').innerText = `Unique $${conf.ticker} Holders`;
             
             document.getElementById('eth-price').innerText = formatCurrency(m.ethPriceUsd);
-            document.getElementById('token-price').innerText = formatCurrency(m.tokenPriceUsd);
+            document.getElementById('token-price').innerText = formatPrice(m.tokenPriceUsd);
             document.getElementById('nft-floor').innerText = m.nftFloorEth.toFixed(3) + ' ETH';
             
             const floorCostUsd = m.nftFloorEth * m.ethPriceUsd;
@@ -825,6 +838,21 @@
                     }
                 }
             });
+        }
+
+        function shareToX() {
+            const conf = masterData.projects[currentProjectKey].config;
+            const act = masterData.projects[currentProjectKey].activation;
+            const own = masterData.projects[currentProjectKey].ownership;
+            
+            const activeCount = act.activeCount || 0;
+            let pctActivated = act.percentActivated || 0;
+            if (pctActivated === 0) pctActivated = (activeCount / act.totalSupply) * 100;
+            
+            const text = `Just checked the $${conf.ticker} Ecosystem Tracker! 📊\n\n🔥 Total Active Units: ${formatNumber(activeCount)} (${pctActivated.toFixed(2)}%)\n💼 Unique NFT Holders: ${formatNumber(own.nftHolders)}\n📈 Ownership Concentration: ${own.ownershipRatio.toFixed(2)}%\n\nTrack real-time network yields & burns below 👇\n`;
+            
+            const url = window.location.href;
+            window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
         }
         
         initDashboard();
